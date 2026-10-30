@@ -173,33 +173,33 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Columna Izquierda: Formulario de Reporte en Texto Libre (7 cols) */}
         <div className="lg:col-span-7 kiro-card rounded-2xl p-6">
-          <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-white/10">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-200">
             <div>
-              <span className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#b080ff]">
+              <span className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-blue-600">
                 <Building2 className="w-3.5 h-3.5" />
                 Rol 01 • Portal del Solicitante (Albergues Piura &amp; Catacaos)
               </span>
-              <h2 className="text-xl font-bold text-white mt-0.5">
+              <h2 className="text-xl font-bold text-slate-900 mt-0.5">
                 Registrar Necesidad Humanitaria en Texto Libre
               </h2>
             </div>
-            <span className="px-2.5 py-1 rounded-lg bg-[#8847ff]/15 border border-[#b080ff]/30 text-xs font-mono text-[#e2d3fe]">
+            <span className="px-2.5 py-1 rounded-lg bg-blue-600 text-slate-900 border border-slate-200 text-xs font-mono text-slate-900">
               POST /necesidades
             </span>
           </div>
 
           {/* Casos rápidos del informe técnico */}
           <div className="mt-4">
-            <span className="text-xs font-mono text-[#a59bb8] block mb-2">
+            <span className="text-xs font-mono text-slate-500 block mb-2">
               Cargar escenario de prueba rápida (Piura / Catacaos):
             </span>
             <div className="flex flex-wrap gap-2.5">
               {PRESET_REPORTES.map((p, idx) => {
                 const colors = [
-                  'border-[#80f4ff]/40 bg-[#80f4ff]/10 text-[#80f4ff] hover:bg-[#80f4ff]/20',
-                  'border-[#ff80b5]/40 bg-[#ff80b5]/10 text-[#ff80b5] hover:bg-[#ff80b5]/20',
-                  'border-[#ffcf99]/40 bg-[#ffcf99]/10 text-[#ffcf99] hover:bg-[#ffcf99]/20',
-                  'border-[#b080ff]/40 bg-[#b080ff]/10 text-[#e2d3fe] hover:bg-[#b080ff]/20',
+                  'border-blue-200 bg-blue-50 text-blue-700 text-blue-600 hover:bg-blue-50 text-blue-700',
+                  'border-rose-200 bg-rose-50 text-rose-700 text-rose-600 hover:bg-rose-50 text-rose-700',
+                  'border-amber-200 bg-amber-50 text-amber-800 text-amber-600 hover:bg-amber-50 text-amber-800',
+                  'border-slate-200 bg-blue-50 text-blue-700 text-slate-900 hover:bg-blue-50 text-blue-700',
                 ];
                 return (
                   <button
@@ -219,7 +219,7 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
           <form onSubmit={handleSubmit} className="mt-5 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-mono text-[#c4b8db] mb-1">
+                <label className="block text-xs font-mono text-slate-700 mb-1">
                   Código Albergue
                 </label>
                 <input
@@ -227,11 +227,11 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
                   value={albergueId}
                   onChange={(e) => setAlbergueId(e.target.value)}
                   required
-                  className="w-full px-3 py-2 rounded-xl bg-[#110e17] border border-white/15 text-sm font-mono text-white focus:outline-none focus:border-[#b080ff]"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 shadow-2xs focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs font-mono text-[#c4b8db] mb-1">
+                <label className="block text-xs font-mono text-slate-700 mb-1">
                   Nombre del Albergue / Centro Temporal
                 </label>
                 <input
@@ -239,20 +239,20 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
                   value={albergueNombre}
                   onChange={(e) => setAlbergueNombre(e.target.value)}
                   required
-                  className="w-full px-3 py-2 rounded-xl bg-[#110e17] border border-white/15 text-sm text-white focus:outline-none focus:border-[#b080ff]"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 shadow-2xs focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-mono text-[#c4b8db] mb-1">
+                <label className="block text-xs font-mono text-slate-700 mb-1">
                   Zona / Distrito FEN
                 </label>
                 <select
                   value={zona}
                   onChange={(e) => setZona(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#110e17] border border-white/15 text-sm text-white focus:outline-none focus:border-[#b080ff]"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 shadow-2xs focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 >
                   <option value="Piura Centro">Piura Centro</option>
                   <option value="Catacaos Sur (Bajo Piura)">Catacaos Sur (Bajo Piura)</option>
@@ -263,7 +263,7 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-mono text-[#c4b8db] mb-1">
+                <label className="block text-xs font-mono text-slate-700 mb-1">
                   Responsable Solicitante
                 </label>
                 <input
@@ -271,11 +271,11 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
                   value={solicitante}
                   onChange={(e) => setSolicitante(e.target.value)}
                   required
-                  className="w-full px-3 py-2 rounded-xl bg-[#110e17] border border-white/15 text-sm text-white focus:outline-none focus:border-[#b080ff]"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 shadow-2xs focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
               <div>
-                <label className="block text-xs font-mono text-[#c4b8db] mb-1">
+                <label className="block text-xs font-mono text-slate-700 mb-1">
                   Familias Damnificadas
                 </label>
                 <input
@@ -284,21 +284,21 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
                   value={familias}
                   onChange={(e) => setFamilias(Number(e.target.value))}
                   required
-                  className="w-full px-3 py-2 rounded-xl bg-[#110e17] border border-white/15 text-sm font-mono text-white focus:outline-none focus:border-[#b080ff]"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 shadow-2xs focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-mono text-[#e2d3fe] font-semibold">
+                <label className="text-xs font-mono text-slate-900 font-semibold">
                   Reporte de Emergencia en Texto Libre (Analizado por Amazon Bedrock)
                 </label>
                 <button
                   type="button"
                   onClick={handlePreviewBedrock}
                   disabled={isClassifying}
-                  className="text-xs font-mono text-[#80f4ff] hover:underline flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-mono text-blue-600 hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   Re-analizar texto con Bedrock IA
@@ -310,12 +310,12 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
                 onChange={(e) => setTextoReporte(e.target.value)}
                 required
                 placeholder="Describe la situación del albergue, síntomas, falta de agua, alimentos o daños estructurales..."
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#110e17] border border-[#b080ff]/35 text-sm text-white placeholder-[#6b6080] focus:outline-none focus:border-[#b080ff] leading-relaxed"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 shadow-2xs placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 leading-relaxed"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-mono text-[#c4b8db] mb-1">
+              <label className="block text-xs font-mono text-slate-700 mb-1">
                 Cantidad / Insumos Específicos Requeridos
               </label>
               <input
@@ -323,12 +323,12 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
                 value={cantidad}
                 onChange={(e) => setCantidad(e.target.value)}
                 required
-                className="w-full px-3 py-2 rounded-xl bg-[#110e17] border border-white/15 text-sm text-white focus:outline-none focus:border-[#b080ff]"
+                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 shadow-2xs focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
             </div>
 
             {submitBanner && (
-              <div className="p-3.5 rounded-xl bg-[#80ffb5]/12 border border-[#80ffb5]/35 text-xs text-[#80ffb5] flex items-center gap-2.5">
+              <div className="p-3.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs text-emerald-600 flex items-center gap-2.5">
                 <CheckCircle2 className="w-4 h-4 shrink-0" />
                 <span>{submitBanner}</span>
               </div>
@@ -339,12 +339,12 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
                 type="button"
                 onClick={handlePreviewBedrock}
                 disabled={isClassifying}
-                className="px-4 py-2.5 rounded-xl text-xs font-mono font-semibold bg-[#221c2e] hover:bg-[#2d253d] text-[#e2d3fe] border border-[#b080ff]/30 flex items-center gap-2 cursor-pointer"
+                className="px-4 py-2.5 rounded-xl text-xs font-mono font-semibold bg-slate-100 hover:bg-slate-100 text-slate-900 border border-slate-200 flex items-center gap-2 cursor-pointer"
               >
                 {isClassifying ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-[#b080ff]" />
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
                 ) : (
-                  <Bot className="w-4 h-4 text-[#b080ff]" />
+                  <Bot className="w-4 h-4 text-blue-600" />
                 )}
                 1. Probar Clasificación Bedrock
               </button>
@@ -352,7 +352,7 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="kiro-glow-btn px-5 py-2.5 rounded-xl text-xs font-semibold text-white flex items-center gap-2 cursor-pointer"
+                className="kiro-glow-btn px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-900 flex items-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -366,64 +366,64 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
         </div>
 
         {/* Columna Derecha: Inspector GenAI con Propósito (+40 Pts) — Amazon Bedrock Runtime (5 cols) */}
-        <div className="lg:col-span-5 kiro-card rounded-2xl p-6 flex flex-col justify-between border border-[#b080ff]/35">
+        <div className="lg:col-span-5 kiro-card rounded-2xl p-6 flex flex-col justify-between border border-slate-200">
           <div>
-            <div className="flex items-center justify-between gap-2 pb-4 border-b border-white/10">
+            <div className="flex items-center justify-between gap-2 pb-4 border-b border-slate-200">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-gradient-to-br from-[#8847ff]/30 to-[#80f4ff]/20 border border-[#b080ff]/40 text-[#e2d3fe]">
+                <div className="p-2 rounded-xl bg-gradient-to-br from-[#8847ff]/30 to-[#80f4ff]/20 border border-slate-200 text-slate-900">
                   <Cpu className="w-5 h-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-bold text-white">
+                    <h3 className="text-base font-bold text-slate-900">
                       Amazon Bedrock Runtime
                     </h3>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#80ffb5]/15 text-[#80ffb5] border border-[#80ffb5]/30">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 text-emerald-600 border border-emerald-200">
                       +40 PTS INSIGNIA
                     </span>
                   </div>
-                  <p className="text-xs font-mono text-[#a59bb8]">
+                  <p className="text-xs font-mono text-slate-500">
                     modelId: anthropic.claude-3-haiku-20240307-v1:0
                   </p>
                 </div>
               </div>
             </div>
 
-            <p className="mt-3 text-xs text-[#c4b8db] leading-relaxed">
+            <p className="mt-3 text-xs text-slate-700 leading-relaxed">
               El reporte del albergue es evaluado mediante prompt estructurado del Centro de
               Operaciones FEN Piura con salida JSON forzada y fallback determinista de alta
               disponibilidad.
             </p>
 
             {isClassifying ? (
-              <div className="mt-4 p-6 rounded-2xl bg-[#120e1c] border border-[#8847ff]/50 space-y-4 ai-shimmer shadow-[0_0_30px_rgba(136,71,255,0.25)]">
+              <div className="mt-4 p-6 rounded-2xl bg-slate-50 border border-blue-200 space-y-4 ai-shimmer shadow-sm">
                 <div className="flex items-center gap-3">
-                  <Loader2 className="w-6 h-6 text-[#80f4ff] animate-spin" />
+                  <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
                   <div>
-                    <h4 className="text-sm font-bold text-white">Invocando Amazon Bedrock Runtime...</h4>
-                    <p className="text-xs font-mono text-[#b080ff]">
+                    <h4 className="text-sm font-bold text-slate-900">Invocando Amazon Bedrock Runtime...</h4>
+                    <p className="text-xs font-mono text-blue-600">
                       anthropic.claude-3-haiku-20240307-v1:0 [us-east-1]
                     </p>
                   </div>
                 </div>
                 <div className="space-y-2 pt-2">
-                  <div className="h-3 rounded-full bg-white/10 animate-pulse w-3/4" />
-                  <div className="h-3 rounded-full bg-white/10 animate-pulse w-1/2" />
-                  <div className="h-3 rounded-full bg-white/10 animate-pulse w-5/6" />
+                  <div className="h-3 rounded-full bg-slate-50 animate-pulse w-3/4" />
+                  <div className="h-3 rounded-full bg-slate-50 animate-pulse w-1/2" />
+                  <div className="h-3 rounded-full bg-slate-50 animate-pulse w-5/6" />
                 </div>
-                <p className="text-xs text-[#a59bb8] italic pt-1">
+                <p className="text-xs text-slate-500 italic pt-1">
                   Extrayendo categoría de auxilio, nivel de urgencia y cálculo de prioridad_despacho...
                 </p>
               </div>
             ) : bedrockResult && (
               <div className="mt-4 space-y-3">
-                <div className="p-4 rounded-xl bg-[#120f19] border border-[#b080ff]/30 space-y-3 shadow-inner">
-                  <div className="flex items-center justify-between text-xs font-mono text-[#a59bb8]">
-                    <span className="font-semibold text-[#e2d3fe] flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-[#80ffb5]" />
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3 shadow-inner">
+                  <div className="flex items-center justify-between text-xs font-mono text-slate-500">
+                    <span className="font-semibold text-slate-900 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
                       CLASIFICACIÓN ESTRUCTURADA
                     </span>
-                    <span className="text-[#80ffb5] font-bold">
+                    <span className="text-emerald-600 font-bold">
                       {bedrockResult.fallback ? 'FALLBACK DETERMINISTA' : 'BEDROCK RUNTIME OK'}
                     </span>
                   </div>
@@ -435,41 +435,45 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
                   </div>
 
                   {bedrockResult.justificacion && (
-                    <p className="text-xs text-[#d6cce8] bg-[#1b1626] p-3 rounded-xl border border-white/10 leading-relaxed">
+                    <p className="text-xs text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-200 leading-relaxed">
                       {bedrockResult.justificacion}
                     </p>
                   )}
                 </div>
 
-                {/* Bloque de código JSON exacto exigido por el manual */}
-                <div>
-                  <div className="flex items-center justify-between text-[11px] font-mono text-[#a59bb8] mb-1.5">
-                    <span className="flex items-center gap-1.5 font-semibold text-[#80f4ff]">
-                      <FileCode2 className="w-3.5 h-3.5" />
-                      Payload JSON devuelto por el clasificador:
+                {/* Resumen Estructurado Apple Clean */}
+                <div className="pt-2">
+                  <div className="flex items-center justify-between text-[11px] font-medium text-slate-500 mb-2">
+                    <span className="flex items-center gap-1.5 font-semibold text-blue-600">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Evaluación Rápida
                     </span>
-                    <span className="text-[#80ffb5] font-bold">Latencia: {bedrockResult.latencyMs || 180}ms</span>
+                    <span className="text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                      {bedrockResult.latencyMs || 180}ms
+                    </span>
                   </div>
-                  <pre className="p-3.5 rounded-xl bg-[#0b0910] border border-white/10 text-xs font-mono text-[#80ffb5] overflow-x-auto shadow-inner">
-                    {JSON.stringify(
-                      {
-                        categoria: bedrockResult.categoria,
-                        urgencia: bedrockResult.urgencia,
-                        prioridad_despacho: bedrockResult.prioridad_despacho,
-                        ...(bedrockResult.fallback ? { fallback: true } : {}),
-                      },
-                      null,
-                      2
-                    )}
-                  </pre>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                      <div className="text-[10px] uppercase font-semibold text-slate-500">Categoría</div>
+                      <div className="text-xs font-bold text-slate-900 mt-1 truncate">{bedrockResult.categoria}</div>
+                    </div>
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                      <div className="text-[10px] uppercase font-semibold text-slate-500">Urgencia</div>
+                      <div className="text-xs font-bold text-slate-900 mt-1 truncate">{bedrockResult.urgencia}</div>
+                    </div>
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                      <div className="text-[10px] uppercase font-semibold text-slate-500">Prioridad</div>
+                      <div className="text-xs font-bold text-slate-900 mt-1">P{bedrockResult.prioridad_despacho}</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[11px] font-mono text-[#9589ab]">
+          <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-[11px] font-mono text-slate-500">
             <span>Valores válidos: AGUA | ALIMENTOS | SALUD | ALBERGUE</span>
-            <span className="text-[#e2d3fe]">Prioridad 1 → 3</span>
+            <span className="text-slate-900">Prioridad 1 → 3</span>
           </div>
         </div>
       </div>
@@ -478,10 +482,10 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
       <div className="kiro-card rounded-2xl p-6">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <div>
-            <h3 className="text-base font-bold text-white">
+            <h3 className="text-base font-bold text-slate-900">
               Solicitudes Registradas por Albergues ({necesidades.length})
             </h3>
-            <p className="text-xs text-[#a59bb8]">
+            <p className="text-xs text-slate-500">
               Estado en tiempo real de los requerimientos de Piura y Catacaos y su código de
               trazabilidad asociado.
             </p>
@@ -492,37 +496,37 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
           {necesidades.map((nec) => (
             <div
               key={nec.id}
-              className="p-4 rounded-xl bg-[#14111d] border border-white/10 hover:border-[#b080ff]/35 transition flex flex-col justify-between gap-3"
+              className="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-200 transition flex flex-col justify-between gap-3"
             >
               <div>
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-[#e2d3fe] px-2 py-0.5 rounded bg-[#b080ff]/15 border border-[#b080ff]/30">
+                    <span className="font-mono text-xs font-bold text-slate-900 px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-slate-200">
                       {nec.albergueId}
                     </span>
-                    <span className="font-mono text-xs text-[#9589ab]">{nec.id}</span>
+                    <span className="font-mono text-xs text-slate-500">{nec.id}</span>
                   </div>
                   <EstadoTrazabilidadBadge estado={nec.estado} />
                 </div>
 
-                <h4 className="font-bold text-sm text-white">{nec.albergueNombre}</h4>
-                <div className="flex flex-wrap items-center gap-3 text-xs text-[#a59bb8] mt-1">
+                <h4 className="font-bold text-sm text-slate-900">{nec.albergueNombre}</h4>
+                <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 mt-1">
                   <span className="flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-[#b080ff]" />
+                    <MapPin className="w-3.5 h-3.5 text-blue-600" />
                     {nec.zona}
                   </span>
                   <span className="flex items-center gap-1">
-                    <Users className="w-3.5 h-3.5 text-[#80f4ff]" />
+                    <Users className="w-3.5 h-3.5 text-blue-600" />
                     {nec.familiasAfectadas} familias
                   </span>
                 </div>
 
-                <p className="mt-2.5 text-xs text-[#d6cce8] leading-relaxed bg-[#0e0c14]/70 p-2.5 rounded-lg border border-white/5">
+                <p className="mt-2.5 text-xs text-slate-700 leading-relaxed bg-slate-50 p-2.5 rounded-lg border border-slate-200">
                   &ldquo;{nec.textoReporte}&rdquo;
                 </p>
               </div>
 
-              <div className="pt-2 border-t border-white/10 space-y-2.5">
+              <div className="pt-2 border-t border-slate-200 space-y-2.5">
                 <div className="flex flex-wrap items-center gap-1.5">
                   <CategoriaBadge categoria={nec.categoria} />
                   <UrgenciaBadge urgencia={nec.urgencia} />
@@ -530,19 +534,19 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-mono text-[#c4b8db]">
-                    Requerido: <strong className="text-white">{nec.cantidad}</strong>
+                  <span className="font-mono text-slate-700">
+                    Requerido: <strong className="text-slate-900">{nec.cantidad}</strong>
                   </span>
                   {nec.trackingIdAsociado ? (
                     <button
                       onClick={() => onInspectTracking(nec.trackingIdAsociado!)}
-                      className="inline-flex items-center gap-1 font-mono text-xs text-[#80ffb5] hover:underline cursor-pointer"
+                      className="inline-flex items-center gap-1 font-mono text-xs text-emerald-600 hover:underline cursor-pointer"
                     >
                       Rastrear {nec.trackingIdAsociado}
                       <ArrowUpRight className="w-3.5 h-3.5" />
                     </button>
                   ) : (
-                    <span className="font-mono text-[11px] text-[#ffcf99]">
+                    <span className="font-mono text-[11px] text-amber-600">
                       Esperando asignación de donante
                     </span>
                   )}

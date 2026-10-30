@@ -281,7 +281,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
   const renderStatusPill = (state: BadgeCheckState) => {
     if (state.status === 'running') {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono bg-[#80f4ff]/15 text-[#80f4ff] border border-[#80f4ff]/35">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono bg-blue-50 text-blue-700 text-blue-600 border border-blue-200">
           <Loader2 className="w-3.5 h-3.5 animate-spin" />
           VERIFICANDO
         </span>
@@ -289,7 +289,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
     }
     if (state.status === 'pass') {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-[#80ffb5]/15 text-[#80ffb5] border border-[#80ffb5]/40">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-50 text-emerald-700 text-emerald-600 border border-emerald-200">
           <CheckCircle2 className="w-3.5 h-3.5" />
           CHECK VERDE
         </span>
@@ -304,7 +304,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
       );
     }
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono bg-white/5 text-[#a59bb8] border border-white/10">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono bg-slate-50 text-slate-500 border border-slate-200">
         <Clock className="w-3.5 h-3.5" />
         LISTO PARA PROBAR
       </span>
@@ -317,71 +317,71 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
       {metrics && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
           <div className="kiro-card rounded-2xl p-4">
-            <div className="text-[11px] font-mono uppercase text-[#a59bb8]">
+            <div className="text-[11px] font-mono uppercase text-slate-500">
               Necesidades Activas
             </div>
-            <div className="text-2xl font-extrabold text-white mt-1">
+            <div className="text-2xl font-extrabold text-slate-900 mt-1">
               {metrics.totalNecesidades}
             </div>
-            <div className="text-[11px] text-[#ff80b5] font-mono mt-1">
+            <div className="text-[11px] text-rose-600 font-mono mt-1">
               {metrics.necesidadesCriticas} urgencias CRÍTICAS
             </div>
           </div>
 
           <div className="kiro-card rounded-2xl p-4">
-            <div className="text-[11px] font-mono uppercase text-[#a59bb8]">
+            <div className="text-[11px] font-mono uppercase text-slate-500">
               Donaciones (TRK)
             </div>
-            <div className="text-2xl font-extrabold text-[#80ffb5] mt-1">
+            <div className="text-2xl font-extrabold text-emerald-600 mt-1">
               {metrics.totalDonaciones}
             </div>
-            <div className="text-[11px] text-[#c4b8db] font-mono mt-1">
+            <div className="text-[11px] text-slate-700 font-mono mt-1">
               100% con tracking_id
             </div>
           </div>
 
           <div className="kiro-card rounded-2xl p-4">
-            <div className="text-[11px] font-mono uppercase text-[#a59bb8]">
+            <div className="text-[11px] font-mono uppercase text-slate-500">
               En Ruta / Asignadas
             </div>
-            <div className="text-2xl font-extrabold text-[#80f4ff] mt-1">
+            <div className="text-2xl font-extrabold text-blue-600 mt-1">
               {metrics.asignacionesActivas}
             </div>
-            <div className="text-[11px] text-[#80f4ff] font-mono mt-1">
+            <div className="text-[11px] text-blue-600 font-mono mt-1">
               Corredor Piura-Catacaos
             </div>
           </div>
 
           <div className="kiro-card rounded-2xl p-4">
-            <div className="text-[11px] font-mono uppercase text-[#a59bb8]">
+            <div className="text-[11px] font-mono uppercase text-slate-500">
               Entregas Verificadas
             </div>
-            <div className="text-2xl font-extrabold text-[#e2d3fe] mt-1">
+            <div className="text-2xl font-extrabold text-slate-900 mt-1">
               {metrics.entregasCompletadas}
             </div>
-            <div className="text-[11px] text-[#80ffb5] font-mono mt-1">
+            <div className="text-[11px] text-emerald-600 font-mono mt-1">
               Actas firmadas
             </div>
           </div>
 
           <div className="kiro-card rounded-2xl p-4">
-            <div className="text-[11px] font-mono uppercase text-[#a59bb8]">
+            <div className="text-[11px] font-mono uppercase text-slate-500">
               Familias Asistidas
             </div>
-            <div className="text-2xl font-extrabold text-[#ffcf99] mt-1">
+            <div className="text-2xl font-extrabold text-amber-600 mt-1">
               {metrics.familiasAsistidas}
             </div>
-            <div className="text-[11px] text-[#a59bb8] font-mono mt-1">
+            <div className="text-[11px] text-slate-500 font-mono mt-1">
               Piura &amp; Bajo Piura
             </div>
           </div>
 
-          <div className="kiro-card rounded-2xl p-4 border border-[#80ffb5]/30">
-            <div className="text-[11px] font-mono uppercase text-[#80ffb5]">
+          <div className="kiro-card rounded-2xl p-4 border border-emerald-200">
+            <div className="text-[11px] font-mono uppercase text-emerald-600">
               Puntaje Objetivo
             </div>
-            <div className="text-2xl font-extrabold text-white mt-1">150 / 150</div>
-            <div className="text-[11px] text-[#80ffb5] font-mono mt-1">
+            <div className="text-2xl font-extrabold text-slate-900 mt-1">150 / 150</div>
+            <div className="text-[11px] text-emerald-600 font-mono mt-1">
               5 Insignias Oficiales
             </div>
           </div>
@@ -389,32 +389,32 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
       )}
 
       {/* Panel Central de Diagnóstico y Certificación Oficial (150 Pts — Secciones 4, 8 y 9) */}
-      <div className="kiro-card rounded-2xl p-6 border border-[#b080ff]/40">
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-white/10">
+      <div className="kiro-card rounded-2xl p-6 border border-slate-200">
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-slate-200">
           <div>
-            <span className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#80ffb5]">
+            <span className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-emerald-600">
               <Award className="w-4 h-4" />
               Protocolo Oficial de Verificación e Insignias de Código (150 Pts)
             </span>
-            <h2 className="text-xl font-bold text-white mt-0.5">
+            <h2 className="text-xl font-bold text-slate-900 mt-0.5">
               Consola de Diagnóstico Pre-Portal para el Jurado y Evaluador Automático
             </h2>
-            <p className="text-xs text-[#a59bb8] mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               Ejecuta exactamente la misma secuencia de peticiones que realiza el portal del
-              concurso sobre <code className="text-[#80f4ff]">/health</code>,{' '}
-              <code className="text-[#80f4ff]">/items</code> y{' '}
-              <code className="text-[#80f4ff]">/jobs</code> (timeout ≤ 12.0s).
+              concurso sobre <code className="text-blue-600">/health</code>,{' '}
+              <code className="text-blue-600">/items</code> y{' '}
+              <code className="text-blue-600">/jobs</code> (timeout ≤ 12.0s).
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
-            <div className="flex items-center gap-2 bg-[#110e17] px-3 py-1.5 rounded-xl border border-white/15">
-              <span className="text-xs font-mono text-[#a59bb8]">Nonce:</span>
+            <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+              <span className="text-xs font-mono text-slate-500">Nonce:</span>
               <input
                 type="text"
                 value={nonceInput}
                 onChange={(e) => setNonceInput(e.target.value)}
-                className="bg-transparent text-xs font-mono text-white w-32 focus:outline-none"
+                className="bg-transparent text-xs font-mono text-slate-900 w-32 focus:outline-none"
               />
             </div>
 
@@ -422,7 +422,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
               type="button"
               onClick={runFullPortalSequence}
               disabled={runningSequence}
-              className="kiro-glow-btn px-5 py-2.5 rounded-xl text-xs font-mono font-bold text-white flex items-center gap-2 cursor-pointer"
+              className="kiro-glow-btn px-5 py-2.5 rounded-xl text-xs font-mono font-bold text-slate-900 flex items-center gap-2 cursor-pointer"
             >
               {runningSequence ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -437,20 +437,20 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
         {/* Tarjetas de las 5 Insignias Oficiales */}
         <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Insignia 1: API Viva (+20 pts) */}
-          <div className="p-4 rounded-xl bg-[#13101c] border border-white/10 space-y-3">
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-[#80ffb5]/15 text-[#80ffb5] border border-[#80ffb5]/30">
+                <div className="p-2 rounded-lg bg-emerald-50 text-emerald-700 text-emerald-600 border border-emerald-200">
                   <Activity className="w-4 h-4" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold text-white">1. Insignia API Viva</h3>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#80ffb5]/20 text-[#80ffb5]">
+                    <h3 className="text-sm font-bold text-slate-900">1. Insignia API Viva</h3>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 text-emerald-600">
                       +20 PTS
                     </span>
                   </div>
-                  <p className="text-xs font-mono text-[#a59bb8]">
+                  <p className="text-xs font-mono text-slate-500">
                     GET /health → 200 con {`{"status":"ok","team":"${cfg.teamId}"}`}
                   </p>
                 </div>
@@ -458,12 +458,12 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
               {renderStatusPill(healthState)}
             </div>
 
-            <p className="text-xs text-[#d6cce8] bg-[#0d0b12] p-2.5 rounded-lg border border-white/5 font-mono">
+            <p className="text-xs text-slate-700 bg-[#0d0b12] p-2.5 rounded-lg border border-slate-200 font-mono">
               {healthState.detail}
             </p>
 
             {healthState.jsonOutput !== undefined && (
-              <pre className="p-2.5 rounded-lg bg-black/50 border border-white/10 text-[11px] font-mono text-[#80ffb5] overflow-x-auto">
+              <pre className="p-2.5 rounded-lg bg-black/50 border border-slate-200 text-[11px] font-mono text-emerald-600 overflow-x-auto">
                 {JSON.stringify(healthState.jsonOutput, null, 2)}
               </pre>
             )}
@@ -472,7 +472,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
               <button
                 type="button"
                 onClick={runHealthCheck}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-mono bg-[#221c2e] hover:bg-[#2f2740] text-[#e2d3fe] border border-[#b080ff]/30 flex items-center gap-1.5 cursor-pointer"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-mono bg-slate-100 hover:bg-slate-100 text-slate-900 border border-slate-200 flex items-center gap-1.5 cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 Probar GET /health
@@ -481,20 +481,20 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
           </div>
 
           {/* Insignia 2: Persistencia (+25 pts) */}
-          <div className="p-4 rounded-xl bg-[#13101c] border border-white/10 space-y-3">
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-[#80f4ff]/15 text-[#80f4ff] border border-[#80f4ff]/30">
+                <div className="p-2 rounded-lg bg-blue-50 text-blue-700 text-blue-600 border border-blue-200">
                   <Database className="w-4 h-4" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold text-white">2. Insignia Persistencia</h3>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#80f4ff]/20 text-[#80f4ff]">
+                    <h3 className="text-sm font-bold text-slate-900">2. Insignia Persistencia</h3>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-50 text-blue-700 text-blue-600">
                       +25 PTS
                     </span>
                   </div>
-                  <p className="text-xs font-mono text-[#a59bb8]">
+                  <p className="text-xs font-mono text-slate-500">
                     POST /items (201) • GET /items/&#123;id&#125; (200) • GET /items (200)
                   </p>
                 </div>
@@ -502,12 +502,12 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
               {renderStatusPill(itemsState)}
             </div>
 
-            <p className="text-xs text-[#d6cce8] bg-[#0d0b12] p-2.5 rounded-lg border border-white/5 font-mono">
+            <p className="text-xs text-slate-700 bg-[#0d0b12] p-2.5 rounded-lg border border-slate-200 font-mono">
               {itemsState.detail}
             </p>
 
             {itemsState.jsonOutput !== undefined && (
-              <pre className="p-2.5 rounded-lg bg-black/50 border border-white/10 text-[11px] font-mono text-[#80f4ff] overflow-x-auto max-h-28">
+              <pre className="p-2.5 rounded-lg bg-black/50 border border-slate-200 text-[11px] font-mono text-blue-600 overflow-x-auto max-h-28">
                 {JSON.stringify(itemsState.jsonOutput, null, 2)}
               </pre>
             )}
@@ -516,7 +516,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
               <button
                 type="button"
                 onClick={runItemsCheck}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-mono bg-[#221c2e] hover:bg-[#2f2740] text-[#e2d3fe] border border-[#b080ff]/30 flex items-center gap-1.5 cursor-pointer"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-mono bg-slate-100 hover:bg-slate-100 text-slate-900 border border-slate-200 flex items-center gap-1.5 cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 Probar Ciclo /items
@@ -525,22 +525,22 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
           </div>
 
           {/* Insignia 3: Asíncrono o Agente (+35 pts) */}
-          <div className="p-4 rounded-xl bg-[#13101c] border border-white/10 space-y-3">
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-[#b080ff]/20 text-[#e2d3fe] border border-[#b080ff]/40">
+                <div className="p-2 rounded-lg bg-blue-50 text-blue-700 text-slate-900 border border-slate-200">
                   <Server className="w-4 h-4" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold text-white">
+                    <h3 className="text-sm font-bold text-slate-900">
                       3. Insignia Asíncrono o Agente
                     </h3>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#b080ff]/25 text-[#e2d3fe]">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-50 text-blue-700 text-slate-900">
                       +35 PTS
                     </span>
                   </div>
-                  <p className="text-xs font-mono text-[#a59bb8]">
+                  <p className="text-xs font-mono text-slate-500">
                     POST /jobs → 202 • GET /jobs/&#123;jobId&#125; ≤ 12s (string invertido)
                   </p>
                 </div>
@@ -548,12 +548,12 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
               {renderStatusPill(jobsState)}
             </div>
 
-            <p className="text-xs text-[#d6cce8] bg-[#0d0b12] p-2.5 rounded-lg border border-white/5 font-mono">
+            <p className="text-xs text-slate-700 bg-[#0d0b12] p-2.5 rounded-lg border border-slate-200 font-mono">
               {jobsState.detail}
             </p>
 
             {jobsState.jsonOutput !== undefined && (
-              <pre className="p-2.5 rounded-lg bg-black/50 border border-white/10 text-[11px] font-mono text-[#e2d3fe] overflow-x-auto max-h-28">
+              <pre className="p-2.5 rounded-lg bg-black/50 border border-slate-200 text-[11px] font-mono text-slate-900 overflow-x-auto max-h-28">
                 {JSON.stringify(jobsState.jsonOutput, null, 2)}
               </pre>
             )}
@@ -562,7 +562,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
               <button
                 type="button"
                 onClick={runJobsCheck}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-mono bg-[#221c2e] hover:bg-[#2f2740] text-[#e2d3fe] border border-[#b080ff]/30 flex items-center gap-1.5 cursor-pointer"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-mono bg-slate-100 hover:bg-slate-100 text-slate-900 border border-slate-200 flex items-center gap-1.5 cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 Probar Pipeline /jobs
@@ -571,22 +571,22 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
           </div>
 
           {/* Insignia 5: GenAI con Propósito (+40 pts) */}
-          <div className="p-4 rounded-xl bg-[#13101c] border border-white/10 space-y-3">
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-[#ffcf99]/15 text-[#ffcf99] border border-[#ffcf99]/35">
+                <div className="p-2 rounded-lg bg-amber-50 text-amber-800 text-amber-600 border border-amber-200">
                   <Cpu className="w-4 h-4" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold text-white">
+                    <h3 className="text-sm font-bold text-slate-900">
                       5. Insignia GenAI con Propósito (Bedrock)
                     </h3>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#ffcf99]/20 text-[#ffcf99]">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-50 text-amber-800 text-amber-600">
                       +40 PTS
                     </span>
                   </div>
-                  <p className="text-xs font-mono text-[#a59bb8]">
+                  <p className="text-xs font-mono text-slate-500">
                     Amazon Bedrock Runtime • Claude 3 Haiku • JSON Schema + Fallback
                   </p>
                 </div>
@@ -594,12 +594,12 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
               {renderStatusPill(bedrockState)}
             </div>
 
-            <p className="text-xs text-[#d6cce8] bg-[#0d0b12] p-2.5 rounded-lg border border-white/5 font-mono">
+            <p className="text-xs text-slate-700 bg-[#0d0b12] p-2.5 rounded-lg border border-slate-200 font-mono">
               {bedrockState.detail}
             </p>
 
             {bedrockState.jsonOutput !== undefined && (
-              <pre className="p-2.5 rounded-lg bg-black/50 border border-white/10 text-[11px] font-mono text-[#ffcf99] overflow-x-auto max-h-28">
+              <pre className="p-2.5 rounded-lg bg-black/50 border border-slate-200 text-[11px] font-mono text-amber-600 overflow-x-auto max-h-28">
                 {JSON.stringify(bedrockState.jsonOutput, null, 2)}
               </pre>
             )}
@@ -608,7 +608,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
               <button
                 type="button"
                 onClick={runBedrockCheck}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-mono bg-[#221c2e] hover:bg-[#2f2740] text-[#e2d3fe] border border-[#b080ff]/30 flex items-center gap-1.5 cursor-pointer"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-mono bg-slate-100 hover:bg-slate-100 text-slate-900 border border-slate-200 flex items-center gap-1.5 cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 Probar Clasificador Bedrock
@@ -618,28 +618,28 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
         </div>
 
         {/* Insignia 4: Maestría Kiro (+30 pts) — Auditoría Estática de Archivos .kiro/ */}
-        <div className="mt-5 p-5 rounded-xl bg-[#13101c] border border-[#b080ff]/30">
+        <div className="mt-5 p-5 rounded-xl bg-slate-50 border border-slate-200">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-lg bg-[#8847ff]/20 text-[#b080ff] border border-[#b080ff]/40">
+              <div className="p-2 rounded-lg bg-blue-600 text-slate-900 text-blue-600 border border-slate-200">
                 <FolderGit2 className="w-4 h-4" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-bold text-white">
+                  <h3 className="text-sm font-bold text-slate-900">
                     4. Insignia Maestría Kiro — Auditoría Estática de Specs, Steering y Hook
                   </h3>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#80ffb5]/20 text-[#80ffb5]">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 text-emerald-600">
                     +30 PTS VERIFICADO
                   </span>
                 </div>
-                <p className="text-xs text-[#a59bb8]">
+                <p className="text-xs text-slate-500">
                   Archivos generados en la raíz del repositorio cumpliendo umbrales de{' '}
-                  <code className="text-[#80f4ff]">wc -m</code>.
+                  <code className="text-blue-600">wc -m</code>.
                 </p>
               </div>
             </div>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-[#80ffb5]/15 text-[#80ffb5] border border-[#80ffb5]/40">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-50 text-emerald-700 text-emerald-600 border border-emerald-200">
               <FileCheck2 className="w-3.5 h-3.5" />5 / 5 ARCHIVOS OK
             </span>
           </div>
@@ -647,7 +647,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs font-mono">
               <thead>
-                <tr className="border-b border-white/10 text-[#9589ab]">
+                <tr className="border-b border-slate-200 text-slate-500">
                   <th className="py-2 pr-3">Ruta en Repositorio</th>
                   <th className="py-2 px-3">Requisito del Evaluador</th>
                   <th className="py-2 px-3">Umbral</th>
@@ -657,15 +657,15 @@ export const AdminView: React.FC<AdminViewProps> = ({ metrics, onRefresh }) => {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {KIRO_STATIC_FILES.map((f) => (
-                  <tr key={f.path} className="hover:bg-white/5">
-                    <td className="py-2.5 pr-3 text-[#e2d3fe] font-semibold">{f.path}</td>
-                    <td className="py-2.5 px-3 text-[#c4b8db] font-sans">{f.rule}</td>
-                    <td className="py-2.5 px-3 text-[#a59bb8]">&ge; {f.minChars} chars</td>
-                    <td className="py-2.5 px-3 text-[#80ffb5] font-bold">
+                  <tr key={f.path} className="hover:bg-slate-50">
+                    <td className="py-2.5 pr-3 text-slate-900 font-semibold">{f.path}</td>
+                    <td className="py-2.5 px-3 text-slate-700 font-sans">{f.rule}</td>
+                    <td className="py-2.5 px-3 text-slate-500">&ge; {f.minChars} chars</td>
+                    <td className="py-2.5 px-3 text-emerald-600 font-bold">
                       {f.actualChars} chars
                     </td>
                     <td className="py-2.5 pl-3 text-right">
-                      <span className="inline-flex items-center gap-1 text-[#80ffb5]">
+                      <span className="inline-flex items-center gap-1 text-emerald-600">
                         <ShieldCheck className="w-3.5 h-3.5" />
                         CUMPLE
                       </span>

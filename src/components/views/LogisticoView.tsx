@@ -74,23 +74,23 @@ export const LogisticoView: React.FC<LogisticoViewProps> = ({
   return (
     <div className="space-y-6">
       <div className="kiro-card rounded-2xl p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/10">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200">
           <div>
-            <span className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#80f4ff]">
+            <span className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-blue-600">
               <Truck className="w-3.5 h-3.5" />
               Rol 04 • Operador Logístico y Brigadas de Ruta (INDECI / COER)
             </span>
-            <h2 className="text-xl font-bold text-white mt-0.5">
+            <h2 className="text-xl font-bold text-slate-900 mt-0.5">
               Control de Convoyes, Estados de Ruta y Confirmación de Entregas
             </h2>
           </div>
-          <span className="px-2.5 py-1 rounded-lg bg-[#80f4ff]/15 border border-[#80f4ff]/30 text-xs font-mono text-[#80f4ff]">
+          <span className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 text-xs font-mono text-blue-600">
             POST /entregas
           </span>
         </div>
 
         {banner && (
-          <div className="mt-4 p-3.5 rounded-xl bg-[#80ffb5]/12 border border-[#80ffb5]/35 text-xs text-[#80ffb5] flex items-center gap-2">
+          <div className="mt-4 p-3.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs text-emerald-600 flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
             <span>{banner}</span>
           </div>
@@ -102,16 +102,16 @@ export const LogisticoView: React.FC<LogisticoViewProps> = ({
             return (
               <div
                 key={asg.id}
-                className="p-5 rounded-2xl bg-[#14111d] border border-white/10 hover:border-[#b080ff]/35 transition space-y-4"
+                className="p-5 rounded-2xl bg-slate-50 border border-slate-200 hover:border-slate-200 transition space-y-4"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-xs px-2.5 py-1 rounded bg-[#b080ff]/20 text-[#e2d3fe] border border-[#b080ff]/35 font-bold">
+                    <span className="font-mono text-xs px-2.5 py-1 rounded bg-blue-50 text-blue-700 text-slate-900 border border-slate-200 font-bold">
                       {asg.id}
                     </span>
                     <button
                       onClick={() => onInspectTracking(asg.tracking_id)}
-                      className="font-mono text-xs font-bold text-[#80ffb5] hover:underline flex items-center gap-1 cursor-pointer"
+                      className="font-mono text-xs font-bold text-emerald-600 hover:underline flex items-center gap-1 cursor-pointer"
                     >
                       <Compass className="w-3.5 h-3.5" />
                       {asg.tracking_id}
@@ -124,38 +124,38 @@ export const LogisticoView: React.FC<LogisticoViewProps> = ({
                   <EstadoTrazabilidadBadge estado={asg.estadoRuta} />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-white/10">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-200">
                   <div>
-                    <div className="text-[11px] font-mono uppercase text-[#9589ab]">
+                    <div className="text-[11px] font-mono uppercase text-slate-500">
                       Albergue Destino
                     </div>
-                    <div className="text-sm font-bold text-white mt-0.5">
+                    <div className="text-sm font-bold text-slate-900 mt-0.5">
                       {asg.albergueNombre}
                     </div>
-                    <div className="text-xs text-[#b080ff] flex items-center gap-1 mt-0.5">
+                    <div className="text-xs text-blue-600 flex items-center gap-1 mt-0.5">
                       <MapPin className="w-3.5 h-3.5" />
                       {asg.zona}
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-[11px] font-mono uppercase text-[#9589ab]">
+                    <div className="text-[11px] font-mono uppercase text-slate-500">
                       Carga Humanitaria Auditada
                     </div>
-                    <div className="text-sm font-medium text-white mt-0.5">{asg.recurso}</div>
-                    <div className="text-xs font-mono text-[#80ffb5] mt-0.5">
+                    <div className="text-sm font-medium text-slate-900 mt-0.5">{asg.recurso}</div>
+                    <div className="text-xs font-mono text-emerald-600 mt-0.5">
                       Cantidad: {asg.cantidad}
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-[11px] font-mono uppercase text-[#9589ab]">
+                    <div className="text-[11px] font-mono uppercase text-slate-500">
                       Unidad &amp; Último Punto de Control
                     </div>
-                    <div className="text-xs font-mono text-[#80f4ff] mt-0.5">
+                    <div className="text-xs font-mono text-blue-600 mt-0.5">
                       {asg.vehiculoPlaca} • {asg.operadorLogistico}
                     </div>
-                    <div className="text-xs text-[#e2d3fe] mt-1 bg-[#1e182b] px-2.5 py-1.5 rounded-lg border border-white/10">
+                    <div className="text-xs text-slate-900 mt-1 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200">
                       📍 {asg.puntoControlActual}
                     </div>
                   </div>
@@ -163,9 +163,9 @@ export const LogisticoView: React.FC<LogisticoViewProps> = ({
 
                 {/* Visual Route Stage Progress Bar */}
                 <div className="pt-2">
-                  <div className="flex items-center justify-between text-[11px] font-mono text-[#a59bb8] mb-1.5">
+                  <div className="flex items-center justify-between text-[11px] font-mono text-slate-500 mb-1.5">
                     <span>Línea de Despacho Humanitario:</span>
-                    <span className="text-[#80f4ff] font-semibold">{asg.estadoRuta}</span>
+                    <span className="text-blue-600 font-semibold">{asg.estadoRuta}</span>
                   </div>
                   <div className="grid grid-cols-4 gap-2">
                     {[
@@ -184,15 +184,15 @@ export const LogisticoView: React.FC<LogisticoViewProps> = ({
                           key={step.key}
                           className={`p-2 rounded-xl text-center text-xs font-mono transition-all border ${
                             isCurrent
-                              ? 'bg-[#8847ff]/25 border-[#b080ff] text-white shadow-[0_0_12px_rgba(176,128,255,0.3)]'
+                              ? 'bg-blue-600 text-slate-900 border-[#b080ff] text-slate-900 shadow-sm'
                               : isComplete
-                              ? 'bg-[#80ffb5]/15 border-[#80ffb5]/30 text-[#80ffb5]'
-                              : 'bg-[#120f18] border-white/5 text-[#6b6080]'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 text-emerald-600'
+                              : 'bg-slate-50 border-slate-200 text-slate-400'
                           }`}
                         >
                           <div className="flex items-center justify-center gap-1">
-                            {isComplete && !isCurrent && <CheckCircle2 className="w-3 h-3 text-[#80ffb5]" />}
-                            {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-[#80f4ff] animate-ping" />}
+                            {isComplete && !isCurrent && <CheckCircle2 className="w-3 h-3 text-emerald-600" />}
+                            {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-blue-50 text-blue-700 animate-ping" />}
                             <span className="font-semibold truncate">{step.label}</span>
                           </div>
                         </div>
@@ -202,9 +202,9 @@ export const LogisticoView: React.FC<LogisticoViewProps> = ({
                 </div>
 
                 {/* Controles para avanzar estado de ruta */}
-                <div className="pt-3 border-t border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className="pt-3 border-t border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                   <div className="flex-1 flex items-center gap-2">
-                    <Navigation className="w-4 h-4 text-[#b080ff] shrink-0" />
+                    <Navigation className="w-4 h-4 text-blue-600 shrink-0" />
                     <select
                       value={customCheckpoint[asg.id] || ''}
                       onChange={(e) =>
@@ -213,7 +213,7 @@ export const LogisticoView: React.FC<LogisticoViewProps> = ({
                           [asg.id]: e.target.value,
                         }))
                       }
-                      className="w-full px-3 py-2 rounded-xl bg-[#0e0c14] border border-white/15 text-xs text-white focus:outline-none focus:border-[#b080ff]"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                     >
                       <option value="">
                         Seleccionar punto de control en corredor Piura / Catacaos...
@@ -231,7 +231,7 @@ export const LogisticoView: React.FC<LogisticoViewProps> = ({
                       type="button"
                       disabled={loadingId !== null}
                       onClick={() => handleUpdateRoute(asg, 'EN_RUTA')}
-                      className="px-3.5 py-2 rounded-xl text-xs font-mono font-semibold bg-[#80f4ff]/15 hover:bg-[#80f4ff]/25 text-[#80f4ff] border border-[#80f4ff]/35 flex items-center gap-1.5 cursor-pointer"
+                      className="px-3.5 py-2 rounded-xl text-xs font-mono font-semibold bg-blue-50 text-blue-700 hover:bg-blue-50 text-blue-700 text-blue-600 border border-blue-200 flex items-center gap-1.5 cursor-pointer"
                     >
                       {loadingId === `${asg.id}-EN_RUTA` ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -247,8 +247,8 @@ export const LogisticoView: React.FC<LogisticoViewProps> = ({
                       onClick={() => handleUpdateRoute(asg, 'ENTREGADO')}
                       className={`px-4 py-2 rounded-xl text-xs font-mono font-semibold flex items-center gap-1.5 cursor-pointer ${
                         isDelivered
-                          ? 'bg-[#80ffb5]/10 text-[#80ffb5]/60 border border-[#80ffb5]/20 cursor-not-allowed'
-                          : 'kiro-glow-btn text-white'
+                          ? 'bg-emerald-50 text-emerald-700 text-emerald-600/60 border border-emerald-200 cursor-not-allowed'
+                          : 'kiro-glow-btn text-slate-900'
                       }`}
                     >
                       {loadingId === `${asg.id}-ENTREGADO` ? (

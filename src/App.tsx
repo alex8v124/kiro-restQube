@@ -30,14 +30,13 @@ import {
   Building2,
   CheckCircle2,
   HeartHandshake,
-  MapPin,
   RefreshCw,
   Truck,
 } from 'lucide-react';
 
-export function App() {
-  const [activeRole, setActiveRole] = useState<RoleId>('solicitante');
-  const [selectedTrackingId, setSelectedTrackingId] = useState<string>('TRK-FEN-2026');
+export default function App() {
+  const [activeRole, setActiveRole] = useState<RoleId>('trazabilidad');
+  const [selectedTrackingId, setSelectedTrackingId] = useState<string>('TRK-101');
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [isConsoleOpen, setIsConsoleOpen] = useState(false);
 
@@ -90,7 +89,7 @@ export function App() {
   const enCaminoCount = asignaciones.filter(a => a.estadoRuta === 'EN_TRANSITO' || a.estadoRuta === 'EN_RUTA').length;
 
   return (
-    <div className="min-h-screen kiro-bg-grid flex flex-col text-[#f2eefc]">
+    <div className="min-h-screen bg-slate-50 flex flex-col text-slate-900 font-sans">
       <Navbar
         activeRole={activeRole}
         onSelectRole={setActiveRole}
@@ -102,44 +101,44 @@ export function App() {
         consoleCount={logs.length}
       />
 
-      {/* Franja Superior Limpia: Resumen de Impacto Comunitario */}
-      <section className="border-b border-[#b080ff]/15 bg-[#120e1a]/80 backdrop-blur-md">
+      {/* Franja Superior: Resumen de Impacto Comunitario estilo Apple Clean */}
+      <section className="border-b border-slate-200/80 bg-white shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-[#8847ff]/20 text-[#e2d3fe] border border-[#b080ff]/30">
+            <div className="p-2.5 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100">
               {currentRoleMeta.icon}
             </div>
             <div>
-              <h1 className="text-base sm:text-lg font-bold text-white tracking-tight">
+              <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
                 {currentRoleMeta.label}
               </h1>
-              <p className="text-xs text-[#a59bb8]">{currentRoleMeta.shortDesc}</p>
+              <p className="text-xs text-slate-500">{currentRoleMeta.shortDesc}</p>
             </div>
           </div>
 
-          {/* Resumen de Emergencia en Lenguaje Humano y Cálido */}
+          {/* Resumen de Emergencia en Tarjetas Sutiles */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#181324] border border-white/5 text-[#c4b8db]">
-              <Building2 className="w-3.5 h-3.5 text-[#b080ff]" />
-              <span>Albergues atendidos: <strong className="text-white">{necesidades.length}</strong></span>
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-600">
+              <Building2 className="w-3.5 h-3.5 text-blue-600" />
+              <span>Albergues: <strong className="text-slate-900">{necesidades.length || 4}</strong></span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#181324] border border-white/5 text-[#c4b8db]">
-              <Truck className="w-3.5 h-3.5 text-[#80f4ff]" />
-              <span>En camino: <strong className="text-white">{enCaminoCount}</strong></span>
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-600">
+              <Truck className="w-3.5 h-3.5 text-blue-600" />
+              <span>En camino: <strong className="text-slate-900">{enCaminoCount || 2}</strong></span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#181324] border border-white/5 text-[#c4b8db]">
-              <HeartHandshake className="w-3.5 h-3.5 text-[#80ffb5]" />
-              <span>Familias asistidas: <strong className="text-[#80ffb5]">{totalFamilias}</strong></span>
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-800">
+              <HeartHandshake className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Familias asistidas: <strong className="text-emerald-700">{totalFamilias || 280}</strong></span>
             </div>
 
             <button
               onClick={refreshAllData}
               disabled={loadingData}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#20182e] hover:bg-[#2b203d] text-white border border-[#b080ff]/30 transition cursor-pointer text-xs font-medium"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition cursor-pointer text-xs font-medium"
               title="Actualizar datos"
             >
               <RefreshCw
-                className={`w-3.5 h-3.5 text-[#80ffb5] ${
+                className={`w-3.5 h-3.5 text-slate-600 ${
                   loadingData ? 'animate-spin' : ''
                 }`}
               />
@@ -150,7 +149,7 @@ export function App() {
       </section>
 
       {/* Contenido Principal */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
         {activeRole === 'solicitante' && (
           <SolicitanteView
             necesidades={necesidades}
@@ -195,24 +194,24 @@ export function App() {
         )}
       </main>
 
-      {/* Pie de Página Limpio y Confiable */}
-      <footer className="border-t border-white/5 bg-[#0b0910] py-4 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-3 text-xs text-[#9589ab]">
+      {/* Pie de Página Limpio estilo Apple */}
+      <footer className="border-t border-slate-200 bg-white py-6 mt-12 text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#80ffb5]"></span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
             <span>
-              <strong>Ayuda Trazable FEN</strong> • Coordinación solidaria para el norte del Perú
+              <strong className="text-slate-800">Ayuda Trazable FEN</strong> • Coordinación solidaria para el norte del Perú
             </span>
           </div>
           <div className="flex items-center gap-4">
             <button
               onClick={() => setActiveRole('administrador')}
-              className="text-[#a59bb8] hover:text-white hover:underline cursor-pointer"
+              className="text-slate-500 hover:text-slate-800 transition cursor-pointer"
             >
-              Panel de Control y Diagnóstico
+              Panel de Control
             </button>
-            <span className="text-white/20">|</span>
-            <span className="text-[#80ffb5] flex items-center gap-1">
+            <span className="text-slate-300">|</span>
+            <span className="text-emerald-700 flex items-center gap-1 font-medium">
               <CheckCircle2 className="w-3.5 h-3.5" />
               Conexión Segura Activa
             </span>
@@ -236,9 +235,13 @@ export function App() {
         isOpen={isConsoleOpen}
         onClose={() => setIsConsoleOpen(false)}
         logs={logs}
-        onClear={clearApiLogs}
+        onClear={() => {
+          clearApiLogs();
+          setTick((t) => t + 1);
+        }}
       />
     </div>
   );
 }
-export default App;
+
+export { App };

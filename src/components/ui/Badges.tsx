@@ -24,43 +24,43 @@ export const CategoriaBadge: React.FC<{ categoria: BedrockCategoria }> = ({ cate
   > = {
     AGUA: {
       label: 'Agua Potable',
-      color: 'bg-[#80f4ff]/10 text-[#80f4ff] border-[#80f4ff]/30',
-      icon: <Droplets className="w-3.5 h-3.5" />,
+      color: 'bg-sky-50 text-sky-700 border-sky-200/80',
+      icon: <Droplets className="w-3.5 h-3.5 text-sky-600" />,
     },
     AGUA_SANEAMIENTO: {
       label: 'Agua y Saneamiento',
-      color: 'bg-[#80f4ff]/10 text-[#80f4ff] border-[#80f4ff]/30',
-      icon: <Droplets className="w-3.5 h-3.5" />,
+      color: 'bg-sky-50 text-sky-700 border-sky-200/80',
+      icon: <Droplets className="w-3.5 h-3.5 text-sky-600" />,
     },
     ALIMENTOS: {
       label: 'Alimentos',
-      color: 'bg-[#ffcf99]/10 text-[#ffcf99] border-[#ffcf99]/30',
-      icon: <Package className="w-3.5 h-3.5" />,
+      color: 'bg-amber-50 text-amber-800 border-amber-200/80',
+      icon: <Package className="w-3.5 h-3.5 text-amber-600" />,
     },
     ALIMENTOS_PERECIBLES: {
       label: 'Alimentos',
-      color: 'bg-[#ffcf99]/10 text-[#ffcf99] border-[#ffcf99]/30',
-      icon: <Package className="w-3.5 h-3.5" />,
+      color: 'bg-amber-50 text-amber-800 border-amber-200/80',
+      icon: <Package className="w-3.5 h-3.5 text-amber-600" />,
     },
     MEDICINA: {
       label: 'Salud y Medicina',
-      color: 'bg-[#ff80b5]/10 text-[#ff80b5] border-[#ff80b5]/30',
-      icon: <HeartPulse className="w-3.5 h-3.5" />,
+      color: 'bg-rose-50 text-rose-700 border-rose-200/80',
+      icon: <HeartPulse className="w-3.5 h-3.5 text-rose-600" />,
     },
     SALUD_EPIDEMIAS: {
       label: 'Salud y Medicina',
-      color: 'bg-[#ff80b5]/10 text-[#ff80b5] border-[#ff80b5]/30',
-      icon: <HeartPulse className="w-3.5 h-3.5" />,
+      color: 'bg-rose-50 text-rose-700 border-rose-200/80',
+      icon: <HeartPulse className="w-3.5 h-3.5 text-rose-600" />,
     },
     ABRIGO: {
       label: 'Refugio y Abrigo',
-      color: 'bg-[#b080ff]/12 text-[#d4b8ff] border-[#b080ff]/35',
-      icon: <Shield className="w-3.5 h-3.5" />,
+      color: 'bg-indigo-50 text-indigo-700 border-indigo-200/80',
+      icon: <Shield className="w-3.5 h-3.5 text-indigo-600" />,
     },
     ALBERGUE_TEMPORAL: {
       label: 'Refugio y Abrigo',
-      color: 'bg-[#b080ff]/12 text-[#d4b8ff] border-[#b080ff]/35',
-      icon: <Home className="w-3.5 h-3.5" />,
+      color: 'bg-indigo-50 text-indigo-700 border-indigo-200/80',
+      icon: <Home className="w-3.5 h-3.5 text-indigo-600" />,
     },
   };
 
@@ -68,7 +68,7 @@ export const CategoriaBadge: React.FC<{ categoria: BedrockCategoria }> = ({ cate
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border ${item.color}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border ${item.color}`}
     >
       {item.icon}
       {item.label}
@@ -87,23 +87,23 @@ export const UrgenciaBadge: React.FC<{ urgencia: BedrockUrgencia }> = ({ urgenci
   };
 
   const styles: Record<string, string> = {
-    CRITICA: 'bg-[#ff3366]/20 text-[#ff8ba7] border-[#ff3366]/50',
-    ALTA: 'bg-[#ff9900]/20 text-[#ffd180] border-[#ff9900]/40',
-    MEDIA: 'bg-[#00c8ff]/15 text-[#80e5ff] border-[#00c8ff]/40',
-    MODERADA: 'bg-[#00c8ff]/15 text-[#80e5ff] border-[#00c8ff]/40',
-    BAJA: 'bg-white/10 text-[#a59bb8] border-white/20',
+    CRITICA: 'bg-red-50 text-red-700 border-red-200',
+    ALTA: 'bg-orange-50 text-orange-700 border-orange-200',
+    MEDIA: 'bg-blue-50 text-blue-700 border-blue-200',
+    MODERADA: 'bg-blue-50 text-blue-700 border-blue-200',
+    BAJA: 'bg-slate-50 text-slate-600 border-slate-200',
   };
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border ${
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border ${
         styles[urgencia] || styles.ALTA
       }`}
     >
       {isCritica ? (
         <span className="relative flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff3366] opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ff3366]"></span>
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
         </span>
       ) : (
         <AlertTriangle className="w-3 h-3 shrink-0" />
@@ -121,18 +121,18 @@ export const PrioridadBadge: React.FC<{ prioridad: PrioridadDespacho }> = ({ pri
   };
 
   const colors: Record<PrioridadDespacho, string> = {
-    1: 'bg-[#8847ff]/20 text-[#e2d3fe] border-[#b080ff]/40',
-    2: 'bg-[#2a2338] text-[#c4b5fd] border-[#b080ff]/25',
-    3: 'bg-[#1f1a29] text-[#9ca3af] border-white/10',
+    1: 'bg-blue-50 text-blue-700 border-blue-200 font-semibold',
+    2: 'bg-slate-100 text-slate-700 border-slate-200',
+    3: 'bg-slate-50 text-slate-600 border-slate-200',
   };
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border ${
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border ${
         colors[prioridad] || colors[2]
       }`}
     >
-      <Zap className="w-3 h-3 text-[#b080ff]" />
+      <Zap className="w-3 h-3 text-blue-600" />
       {labels[prioridad] || 'Prioritario'}
     </span>
   );
@@ -144,43 +144,43 @@ export const EstadoTrazabilidadBadge: React.FC<{ estado: EstadoTrazabilidad | st
   const map: Record<string, { text: string; cls: string; icon: React.ReactNode }> = {
     REGISTRADO: {
       text: 'Registrado',
-      cls: 'bg-[#b080ff]/15 text-[#e2d3fe] border-[#b080ff]/35',
-      icon: <Package className="w-3.5 h-3.5" />,
+      cls: 'bg-slate-100 text-slate-700 border-slate-200',
+      icon: <Package className="w-3.5 h-3.5 text-slate-500" />,
     },
     ABIERTA: {
       text: 'Pendiente',
-      cls: 'bg-[#ff3366]/15 text-[#ff8ba7] border-[#ff3366]/40',
-      icon: <AlertTriangle className="w-3.5 h-3.5" />,
+      cls: 'bg-amber-50 text-amber-700 border-amber-200',
+      icon: <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />,
     },
     ASIGNADO: {
       text: 'Asignado a Albergue',
-      cls: 'bg-[#ff9900]/15 text-[#ffd180] border-[#ff9900]/35',
-      icon: <Zap className="w-3.5 h-3.5" />,
+      cls: 'bg-blue-50 text-blue-700 border-blue-200',
+      icon: <Zap className="w-3.5 h-3.5 text-blue-500" />,
     },
     ASIGNADA: {
       text: 'Asignado a Albergue',
-      cls: 'bg-[#ff9900]/15 text-[#ffd180] border-[#ff9900]/35',
-      icon: <Zap className="w-3.5 h-3.5" />,
+      cls: 'bg-blue-50 text-blue-700 border-blue-200',
+      icon: <Zap className="w-3.5 h-3.5 text-blue-500" />,
     },
     EN_TRANSITO: {
-      text: 'En Camino',
-      cls: 'bg-[#00c8ff]/15 text-[#80e5ff] border-[#00c8ff]/40',
-      icon: <Truck className="w-3.5 h-3.5" />,
+      text: 'En Camino a Destino',
+      cls: 'bg-blue-50 text-blue-700 border-blue-200 font-medium',
+      icon: <Truck className="w-3.5 h-3.5 text-blue-600" />,
     },
     EN_RUTA: {
-      text: 'En Camino',
-      cls: 'bg-[#00c8ff]/15 text-[#80e5ff] border-[#00c8ff]/40',
-      icon: <Truck className="w-3.5 h-3.5" />,
+      text: 'En Camino a Destino',
+      cls: 'bg-blue-50 text-blue-700 border-blue-200 font-medium',
+      icon: <Truck className="w-3.5 h-3.5 text-blue-600" />,
     },
     ENTREGADO: {
       text: 'Entregado con Éxito',
-      cls: 'bg-[#00ff99]/15 text-[#80ffcc] border-[#00ff99]/40',
-      icon: <CheckCircle2 className="w-3.5 h-3.5" />,
+      cls: 'bg-emerald-50 text-emerald-700 border-emerald-200 font-medium',
+      icon: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />,
     },
     ATENDIDA: {
       text: 'Atendido',
-      cls: 'bg-[#00ff99]/15 text-[#80ffcc] border-[#00ff99]/40',
-      icon: <CheckCircle2 className="w-3.5 h-3.5" />,
+      cls: 'bg-emerald-50 text-emerald-700 border-emerald-200 font-medium',
+      icon: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />,
     },
   };
 

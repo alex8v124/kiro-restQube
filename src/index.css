@@ -2,72 +2,71 @@
 
 @layer base {
   :root {
-    --kiro-bg-deep: #0e0c14;
-    --kiro-bg-workbench: #15121c;
-    --kiro-bg-panel: #1d1826;
-    --kiro-bg-elevated: #251f30;
-    --kiro-border: rgba(176, 128, 255, 0.16);
-    --kiro-border-strong: rgba(176, 128, 255, 0.38);
-    --kiro-accent: #b080ff;
-    --kiro-accent-strong: #8847ff;
-    --kiro-mint: #80ffb5;
-    --kiro-cyan: #80f4ff;
-    --kiro-amber: #ffcf99;
-    --kiro-pink: #ff80b5;
+    --bg-page: #f8fafc;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --card-bg: #ffffff;
+    --card-border: #e2e8f0;
+    --accent-blue: #2563eb;
+    --accent-emerald: #059669;
   }
 
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background-color: var(--kiro-bg-deep);
-    color: #f2eefc;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   code, pre, .font-mono {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
   }
 }
 
-/* Kiro.dev subtle dot/grid background & ambient purple glow */
+/* Apple Clean subtle background */
 .kiro-bg-grid {
-  background-image:
-    radial-gradient(circle at 18% 0%, rgba(136, 71, 255, 0.18) 0%, transparent 45%),
-    radial-gradient(circle at 82% 8%, rgba(128, 244, 255, 0.10) 0%, transparent 40%),
-    linear-gradient(to right, rgba(176, 128, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(176, 128, 255, 0.05) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+  background-color: #f8fafc;
+  background-image: radial-gradient(circle at 50% -20%, rgba(37, 99, 235, 0.05) 0%, transparent 50%);
 }
 
+/* Apple Clean Card */
 .kiro-card {
-  background: linear-gradient(180deg, rgba(31, 26, 44, 0.88) 0%, rgba(19, 16, 26, 0.94) 100%);
-  border: 1px solid rgba(176, 128, 255, 0.18);
-  box-shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(14px);
+  background-color: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .kiro-card-interactive {
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .kiro-card-interactive:hover {
-  border-color: rgba(176, 128, 255, 0.42);
-  box-shadow: 0 16px 40px -8px rgba(136, 71, 255, 0.28), inset 0 1px 0 0 rgba(176, 128, 255, 0.25);
-  transform: translateY(-2px);
-}
-
-.kiro-glow-btn {
-  background: linear-gradient(135deg, #8847ff 0%, #6d28d9 100%);
-  box-shadow: 0 0 24px -4px rgba(136, 71, 255, 0.55), inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
-  transition: all 0.18s ease;
-}
-
-.kiro-glow-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #995eff 0%, #7c3aed 100%);
-  box-shadow: 0 0 32px -2px rgba(176, 128, 255, 0.75), inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.06), 0 4px 6px -2px rgba(15, 23, 42, 0.03);
   transform: translateY(-1px);
 }
 
-/* Radar & Pulse Animations for Emergency Crisis Monitoring */
+/* Apple Clean Primary Button */
+.kiro-glow-btn {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.15s ease;
+}
+
+.kiro-glow-btn:hover:not(:disabled) {
+  background-color: #1d4ed8;
+  box-shadow: 0 4px 8px -2px rgba(37, 99, 235, 0.25);
+  transform: translateY(-0.5px);
+}
+
+/* Animations */
 @keyframes radar-pulse {
   0% {
     transform: scale(0.95);
@@ -89,10 +88,10 @@
 
 @keyframes urgent-pulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(255, 77, 109, 0.45);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3);
   }
   50% {
-    box-shadow: 0 0 16px 4px rgba(255, 77, 109, 0.2);
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.08);
   }
 }
 
@@ -100,52 +99,21 @@
   animation: urgent-pulse 2.2s infinite ease-in-out;
 }
 
-@keyframes ai-scan {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.ai-shimmer {
-  background: linear-gradient(90deg, transparent 0%, rgba(176, 128, 255, 0.15) 50%, transparent 100%);
-  background-size: 200% 100%;
-  animation: ai-scan 2.5s infinite linear;
-}
-
-/* Glass Pill Accent */
-.kiro-pill {
-  background: rgba(25, 20, 34, 0.7);
-  border: 1px solid rgba(176, 128, 255, 0.2);
-  backdrop-filter: blur(8px);
-}
-
-/* Custom sleek dark scrollbar */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #110e17;
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2a2238;
-  border-radius: 4px;
+  background: #cbd5e1;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #44375b;
-}
-
-/* Hide scrollbar for clean tab carousels */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  background: #94a3b8;
 }

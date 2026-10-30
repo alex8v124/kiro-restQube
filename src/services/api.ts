@@ -199,6 +199,28 @@ let localNecesidades: NecesidadItem[] = [
 
 let localDonaciones: DonacionItem[] = [
   {
+    id: 'DON-100',
+    tracking_id: 'TRK-101',
+    donanteNombre: 'Agua Vida Solidaria',
+    donanteTipo: 'Empresa',
+    descripcion: '50 Bidones de Agua Potable 20L',
+    item: '50 Bidones de Agua Potable 20L',
+    cantidad: '50 Bidones de Agua Potable 20L',
+    categoria: 'AGUA',
+    necesidadIdDestino: 'NEC-101',
+    albergue_asignado: 'Albergue San Pablo (Catacaos, Piura)',
+    zonaDestino: 'Catacaos — 40 Familias beneficiadas',
+    estado: 'EN_TRANSITO',
+    mensaje: 'En camino a destino por Panamericana Norte — Camión #04',
+    linea_tiempo: [
+      { paso: 'Donación Recibida: Punto de acopio central Lima — Registrado', timestamp: 'Hoy 08:30', completado: true },
+      { paso: 'Asignación Vital con Albergue: Emparejado con Albergue San Pablo (Catacaos, Piura)', timestamp: 'Hoy 09:15', completado: true },
+      { paso: 'En Tránsito Terrestre: Despacho en ruta Panamericana Norte — Camión #04', timestamp: 'Hoy 10:30', completado: true },
+      { paso: 'Entrega en Caserío: Recepción y firma digital por brigada local', timestamp: null, completado: false },
+    ],
+    creadoEn: 'Hoy, 08:30',
+  },
+  {
     id: 'DON-101',
     tracking_id: 'TRK-FEN-2026',
     donanteNombre: 'Fundación Solidaridad Norte',

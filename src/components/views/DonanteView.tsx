@@ -108,28 +108,28 @@ export const DonanteView: React.FC<DonanteViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Columna Izquierda: Necesidades Abiertas por Urgencia (7 cols) */}
         <div className="lg:col-span-7 kiro-card rounded-2xl p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/10">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200">
             <div>
-              <span className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#b080ff]">
+              <span className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-blue-600">
                 <HandHeart className="w-3.5 h-3.5" />
                 Rol 02 • Portal del Donante
               </span>
-              <h2 className="text-xl font-bold text-white mt-0.5">
+              <h2 className="text-xl font-bold text-slate-900 mt-0.5">
                 Necesidades Abiertas Priorizadas por Urgencia
               </h2>
             </div>
 
             {/* Filtro por Urgencia */}
-            <div className="flex items-center gap-1.5 bg-[#120f19] p-1 rounded-xl border border-white/10">
-              <Filter className="w-3.5 h-3.5 text-[#a59bb8] ml-2" />
+            <div className="flex items-center gap-1.5 bg-slate-50 p-1 rounded-xl border border-slate-200">
+              <Filter className="w-3.5 h-3.5 text-slate-500 ml-2" />
               {(['TODAS', 'CRITICA', 'ALTA', 'MODERADA'] as const).map((urg) => (
                 <button
                   key={urg}
                   onClick={() => setFiltroUrgencia(urg)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-mono transition cursor-pointer ${
                     filtroUrgencia === urg
-                      ? 'bg-[#8847ff] text-white font-semibold'
-                      : 'text-[#a59bb8] hover:text-white'
+                      ? 'bg-blue-600 text-slate-900 text-slate-900 font-semibold'
+                      : 'text-slate-500 hover:text-slate-900'
                   }`}
                 >
                   {urg}
@@ -147,25 +147,25 @@ export const DonanteView: React.FC<DonanteViewProps> = ({
                   onClick={() => handleSelectNecesidadParaDonar(nec)}
                   className={`p-4 rounded-xl border transition cursor-pointer ${
                     isSelected
-                      ? 'bg-[#211a30] border-[#b080ff] shadow-[0_0_20px_rgba(176,128,255,0.2)]'
-                      : 'bg-[#14111d] border-white/10 hover:border-[#b080ff]/40'
+                      ? 'bg-slate-100 border-[#b080ff] shadow-sm'
+                      : 'bg-slate-50 border-slate-200 hover:border-slate-200'
                   }`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-[#e2d3fe] px-2 py-0.5 rounded bg-[#b080ff]/15 border border-[#b080ff]/30">
+                      <span className="font-mono text-xs font-bold text-slate-900 px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-slate-200">
                         {nec.albergueId}
                       </span>
-                      <span className="text-sm font-bold text-white">{nec.albergueNombre}</span>
+                      <span className="text-sm font-bold text-slate-900">{nec.albergueNombre}</span>
                     </div>
                     <EstadoTrazabilidadBadge estado={nec.estado} />
                   </div>
 
-                  <p className="text-xs text-[#d6cce8] mt-2 leading-relaxed">
+                  <p className="text-xs text-slate-700 mt-2 leading-relaxed">
                     {nec.textoReporte}
                   </p>
 
-                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-white/10">
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-slate-200">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <UrgenciaBadge urgencia={nec.urgencia} />
                       <PrioridadBadge prioridad={nec.prioridad_despacho} />
@@ -178,7 +178,7 @@ export const DonanteView: React.FC<DonanteViewProps> = ({
                         e.stopPropagation();
                         handleSelectNecesidadParaDonar(nec);
                       }}
-                      className="px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-[#8847ff]/20 hover:bg-[#8847ff] text-[#e2d3fe] hover:text-white border border-[#b080ff]/40 transition flex items-center gap-1 cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-blue-600 text-slate-900 hover:bg-blue-600 text-slate-900 text-slate-900 hover:text-slate-900 border border-slate-200 transition flex items-center gap-1 cursor-pointer"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
                       {isSelected ? 'Seleccionada para Donar' : 'Comprometer Ayuda'}
@@ -192,26 +192,26 @@ export const DonanteView: React.FC<DonanteViewProps> = ({
 
         {/* Columna Derecha: Formulario POST /donaciones + Emisión de tracking_id (5 cols) */}
         <div className="lg:col-span-5 space-y-5">
-          <div className="kiro-card rounded-2xl p-6 border border-[#b080ff]/35">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+          <div className="kiro-card rounded-2xl p-6 border border-slate-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
               <div>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <PackagePlus className="w-4 h-4 text-[#80ffb5]" />
+                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <PackagePlus className="w-4 h-4 text-emerald-600" />
                   Registrar Donación Trazable
                 </h3>
-                <p className="text-xs text-[#a59bb8]">
-                  Genera tu código <code className="text-[#80ffb5]">tracking_id</code> para auditar
+                <p className="text-xs text-slate-500">
+                  Genera tu código <code className="text-emerald-600">tracking_id</code> para auditar
                   cada etapa hasta el albergue.
                 </p>
               </div>
-              <span className="px-2 py-1 rounded bg-[#80ffb5]/15 border border-[#80ffb5]/30 text-[11px] font-mono text-[#80ffb5]">
+              <span className="px-2 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-mono text-emerald-600">
                 POST /donaciones
               </span>
             </div>
 
             <form onSubmit={handleSubmitDonacion} className="mt-4 space-y-3.5">
               <div>
-                <label className="block text-xs font-mono text-[#c4b8db] mb-1">
+                <label className="block text-xs font-mono text-slate-700 mb-1">
                   Entidad o Ciudadano Donante
                 </label>
                 <input
@@ -219,13 +219,13 @@ export const DonanteView: React.FC<DonanteViewProps> = ({
                   value={donanteNombre}
                   onChange={(e) => setDonanteNombre(e.target.value)}
                   required
-                  className="w-full px-3 py-2 rounded-xl bg-[#110e17] border border-white/15 text-sm text-white focus:outline-none focus:border-[#b080ff]"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 shadow-2xs focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-mono text-[#c4b8db] mb-1">
+                  <label className="block text-xs font-mono text-slate-700 mb-1">
                     Tipo de Donante
                   </label>
                   <select
@@ -233,7 +233,7 @@ export const DonanteView: React.FC<DonanteViewProps> = ({
                     onChange={(e) =>
                       setDonanteTipo(e.target.value as DonacionItem['donanteTipo'])
                     }
-                    className="w-full px-3 py-2 rounded-xl bg-[#110e17] border border-white/15 text-sm text-white focus:outline-none focus:border-[#b080ff]"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 shadow-2xs focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   >
                     <option value="Empresa">Empresa Privada</option>
                     <option value="ONG">ONG / Fundación</option>
@@ -243,13 +243,13 @@ export const DonanteView: React.FC<DonanteViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono text-[#c4b8db] mb-1">
+                  <label className="block text-xs font-mono text-slate-700 mb-1">
                     Necesidad Vinculada
                   </label>
                   <select
                     value={selectedNecId}
                     onChange={(e) => setSelectedNecId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-[#110e17] border border-white/15 text-sm font-mono text-white focus:outline-none focus:border-[#b080ff]"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 shadow-2xs focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   >
                     <option value="">Fondo General Piura</option>
                     {necesidades.map((n) => (
@@ -262,13 +262,13 @@ export const DonanteView: React.FC<DonanteViewProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-[#c4b8db] mb-1">
+                <label className="block text-xs font-mono text-slate-700 mb-1">
                   Categoría Humanitaria
                 </label>
                 <select
                   value={categoria}
                   onChange={(e) => setCategoria(e.target.value as BedrockCategoria)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#110e17] border border-white/15 text-sm font-mono text-white focus:outline-none focus:border-[#b080ff]"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 shadow-2xs focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 >
                   <option value="AGUA_SANEAMIENTO">AGUA_SANEAMIENTO</option>
                   <option value="ALIMENTOS_PERECIBLES">ALIMENTOS_PERECIBLES</option>
@@ -278,7 +278,7 @@ export const DonanteView: React.FC<DonanteViewProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-[#c4b8db] mb-1">
+                <label className="block text-xs font-mono text-slate-700 mb-1">
                   Descripción de Insumos Donados
                 </label>
                 <input
@@ -286,12 +286,12 @@ export const DonanteView: React.FC<DonanteViewProps> = ({
                   value={descripcion}
                   onChange={(e) => setDescripcion(e.target.value)}
                   required
-                  className="w-full px-3 py-2 rounded-xl bg-[#110e17] border border-white/15 text-sm text-white focus:outline-none focus:border-[#b080ff]"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 shadow-2xs focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-[#c4b8db] mb-1">
+                <label className="block text-xs font-mono text-slate-700 mb-1">
                   Cantidad Total Comprometida
                 </label>
                 <input
@@ -299,14 +299,14 @@ export const DonanteView: React.FC<DonanteViewProps> = ({
                   value={cantidad}
                   onChange={(e) => setCantidad(e.target.value)}
                   required
-                  className="w-full px-3 py-2 rounded-xl bg-[#110e17] border border-white/15 text-sm font-mono text-white focus:outline-none focus:border-[#b080ff]"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 shadow-2xs focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full kiro-glow-btn py-2.5 rounded-xl text-xs font-semibold text-white flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full kiro-glow-btn py-2.5 rounded-xl text-xs font-semibold text-slate-900 flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -319,40 +319,40 @@ export const DonanteView: React.FC<DonanteViewProps> = ({
 
             {/* Tarjeta de Recibo Oficial con tracking_id */}
             {reciboTracking && (
-              <div className="mt-5 p-4 rounded-xl bg-gradient-to-br from-[#80ffb5]/15 via-[#182622] to-[#120f18] border border-[#80ffb5]/45 space-y-3">
+              <div className="mt-5 p-4 rounded-xl bg-gradient-to-br from-[#80ffb5]/15 via-[#182622] to-[#120f18] border border-emerald-200 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#80ffb5]">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-emerald-600">
                     <CheckCircle2 className="w-4 h-4" />
                     ESTADO: {reciboTracking.estado}
                   </span>
-                  <QrCode className="w-5 h-5 text-[#80ffb5]" />
+                  <QrCode className="w-5 h-5 text-emerald-600" />
                 </div>
 
-                <div className="p-3 rounded-lg bg-black/40 border border-white/10 flex items-center justify-between">
+                <div className="p-3 rounded-lg bg-black/40 border border-slate-200 flex items-center justify-between">
                   <div>
-                    <div className="text-[10px] font-mono uppercase text-[#a59bb8]">
+                    <div className="text-[10px] font-mono uppercase text-slate-500">
                       Código Oficial de Rastreo (tracking_id)
                     </div>
-                    <div className="text-base font-mono font-bold text-white tracking-wider">
+                    <div className="text-base font-mono font-bold text-slate-900 tracking-wider">
                       {reciboTracking.tracking_id}
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleCopyTracking(reciboTracking.tracking_id)}
-                    className="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-mono text-white flex items-center gap-1 cursor-pointer"
+                    className="px-2.5 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-50 text-xs font-mono text-slate-900 flex items-center gap-1 cursor-pointer"
                   >
                     <Copy className="w-3.5 h-3.5" />
                     {copied ? 'Copiado' : 'Copiar'}
                   </button>
                 </div>
 
-                <p className="text-xs text-[#d6cce8]">{reciboTracking.mensaje}</p>
+                <p className="text-xs text-slate-700">{reciboTracking.mensaje}</p>
 
                 <button
                   type="button"
                   onClick={() => onInspectTracking(reciboTracking.tracking_id)}
-                  className="w-full py-2 rounded-lg bg-[#80ffb5]/20 hover:bg-[#80ffb5]/30 text-[#80ffb5] font-mono text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full py-2 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-50 text-emerald-700 text-emerald-600 font-mono text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   Abrir Línea de Tiempo de Trazabilidad
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -363,30 +363,30 @@ export const DonanteView: React.FC<DonanteViewProps> = ({
 
           {/* Historial de Donaciones Registradas */}
           <div className="kiro-card rounded-2xl p-5">
-            <h4 className="text-sm font-bold text-white mb-3">
+            <h4 className="text-sm font-bold text-slate-900 mb-3">
               Últimas Donaciones con Tracking Activo ({donaciones.length})
             </h4>
             <div className="space-y-2.5">
               {donaciones.map((don) => (
                 <div
                   key={don.id}
-                  className="p-3 rounded-xl bg-[#14111d] border border-white/10 flex items-center justify-between gap-2"
+                  className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-2"
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => onInspectTracking(don.tracking_id)}
-                        className="font-mono text-xs font-bold text-[#80ffb5] hover:underline cursor-pointer"
+                        className="font-mono text-xs font-bold text-emerald-600 hover:underline cursor-pointer"
                       >
                         {don.tracking_id}
                       </button>
-                      <span className="text-xs text-[#a59bb8] truncate">
+                      <span className="text-xs text-slate-500 truncate">
                         • {don.donanteNombre}
                       </span>
                     </div>
-                    <p className="text-xs text-white truncate mt-0.5">{don.descripcion}</p>
-                    <span className="text-[11px] text-[#9589ab] flex items-center gap-1 mt-0.5">
-                      <MapPin className="w-3 h-3 text-[#b080ff]" />
+                    <p className="text-xs text-slate-900 truncate mt-0.5">{don.descripcion}</p>
+                    <span className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
+                      <MapPin className="w-3 h-3 text-blue-600" />
                       Destino: {don.zonaDestino}
                     </span>
                   </div>
