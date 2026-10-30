@@ -161,6 +161,46 @@ export const LogisticoView: React.FC<LogisticoViewProps> = ({
                   </div>
                 </div>
 
+                {/* Visual Route Stage Progress Bar */}
+                <div className="pt-2">
+                  <div className="flex items-center justify-between text-[11px] font-mono text-[#a59bb8] mb-1.5">
+                    <span>Línea de Despacho Humanitario:</span>
+                    <span className="text-[#80f4ff] font-semibold">{asg.estadoRuta}</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { key: 'REGISTRADO', label: '1. Registrado' },
+                      { key: 'ASIGNADO', label: '2. Asignado' },
+                      { key: 'EN_RUTA', label: '3. En Ruta FEN' },
+                      { key: 'ENTREGADO', label: '4. Conforme' },
+                    ].map((step, idx) => {
+                      const stages = ['REGISTRADO', 'ASIGNADO', 'EN_RUTA', 'ENTREGADO'];
+                      const currentIdx = stages.indexOf(asg.estadoRuta);
+                      const isComplete = idx <= currentIdx;
+                      const isCurrent = idx === currentIdx;
+
+                      return (
+                        <div
+                          key={step.key}
+                          className={`p-2 rounded-xl text-center text-xs font-mono transition-all border ${
+                            isCurrent
+                              ? 'bg-[#8847ff]/25 border-[#b080ff] text-white shadow-[0_0_12px_rgba(176,128,255,0.3)]'
+                              : isComplete
+                              ? 'bg-[#80ffb5]/15 border-[#80ffb5]/30 text-[#80ffb5]'
+                              : 'bg-[#120f18] border-white/5 text-[#6b6080]'
+                          }`}
+                        >
+                          <div className="flex items-center justify-center gap-1">
+                            {isComplete && !isCurrent && <CheckCircle2 className="w-3 h-3 text-[#80ffb5]" />}
+                            {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-[#80f4ff] animate-ping" />}
+                            <span className="font-semibold truncate">{step.label}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {/* Controles para avanzar estado de ruta */}
                 <div className="pt-3 border-t border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                   <div className="flex-1 flex items-center gap-2">

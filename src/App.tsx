@@ -99,51 +99,62 @@ export function App() {
         consoleCount={logs.length}
       />
 
-      {/* Hero Strip estilo Kiro.dev con estado de arquitectura y rol activo */}
-      <div className="border-b border-[#b080ff]/15 bg-gradient-to-r from-[#181326]/90 via-[#120e1c]/90 to-[#181326]/90">
+      {/* Hero Strip estilo Kiro Command Center con telemetría en vivo */}
+      <div className="border-b border-[#b080ff]/20 bg-gradient-to-r from-[#171224]/95 via-[#110d1a]/95 to-[#171224]/95 shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-[#8847ff]/20 border border-[#b080ff]/40 text-[#e2d3fe]">
+          <div className="flex items-center gap-3.5">
+            <div className="p-3 rounded-2xl bg-gradient-to-br from-[#8847ff]/25 to-[#6d28d9]/30 border border-[#b080ff]/40 text-[#f3e8ff] shadow-[0_0_20px_rgba(136,71,255,0.3)]">
               {currentRoleMeta.icon}
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-base sm:text-lg font-bold text-white">
+                <h1 className="text-base sm:text-lg font-extrabold text-white tracking-tight">
                   Módulo Activo: {currentRoleMeta.label}
                 </h1>
-                <span className="px-2 py-0.5 rounded-md text-[11px] font-mono bg-[#b080ff]/15 text-[#e2d3fe] border border-[#b080ff]/30">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-[#8847ff]/25 text-[#e2d3fe] border border-[#b080ff]/40 shadow-sm">
                   {currentRoleMeta.badge}
                 </span>
               </div>
-              <p className="text-xs text-[#a59bb8]">{currentRoleMeta.shortDesc}</p>
+              <p className="text-xs text-[#c4b8db]">{currentRoleMeta.shortDesc}</p>
             </div>
           </div>
 
-          {/* Kiro Spec & AWS Architecture Pills */}
-          <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#161320] border border-white/10 text-[#c4b8db]">
-              <MapPin className="w-3.5 h-3.5 text-[#ff80b5]" />
-              Foco: Piura &amp; Catacaos
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#161320] border border-[#b080ff]/25 text-[#e2d3fe]">
+          {/* Telemetría Humanitaria Rápida */}
+          <div className="flex flex-wrap items-center gap-2.5 text-xs font-mono">
+            <div className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-xl bg-[#161220] border border-white/10 text-[#d8cce8]">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#ff3366] animate-pulse"></span>
+                <span>Albergues: <strong className="text-white font-bold">{necesidades.length}</strong></span>
+              </span>
+              <span className="text-white/20">|</span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#80f4ff]"></span>
+                <span>En Ruta: <strong className="text-[#80f4ff] font-bold">{asignaciones.filter(a => a.estadoRuta === 'EN_RUTA').length}</strong></span>
+              </span>
+              <span className="text-white/20">|</span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#80ffb5]"></span>
+                <span>Familias: <strong className="text-[#80ffb5] font-bold">{necesidades.reduce((acc, n) => acc + (n.familiasAfectadas || 0), 0)}</strong></span>
+              </span>
+            </div>
+
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#161220] border border-[#b080ff]/25 text-[#e2d3fe]">
               <Cpu className="w-3.5 h-3.5 text-[#b080ff]" />
-              Bedrock Claude 3 Haiku
+              <span className="hidden sm:inline">Amazon Bedrock</span> Claude 3
             </span>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#161320] border border-[#80ffb5]/25 text-[#80ffb5]">
-              <FolderGit2 className="w-3.5 h-3.5" />
-              .kiro/ Specs Ready
-            </span>
+
             <button
               onClick={refreshAllData}
               disabled={loadingData}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#221c2e] hover:bg-[#2d253d] text-white border border-[#b080ff]/30 transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#231b30] hover:bg-[#2e2340] text-white border border-[#b080ff]/35 hover:border-[#b080ff]/70 transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] cursor-pointer"
+              title="Sincronizar datos con backend o almacenamiento local"
             >
               <RefreshCw
-                className={`w-3.5 h-3.5 text-[#b080ff] ${
+                className={`w-3.5 h-3.5 text-[#80ffb5] ${
                   loadingData ? 'animate-spin' : ''
                 }`}
               />
-              Sincronizar
+              <span className="font-semibold">Sincronizar</span>
             </button>
           </div>
         </div>

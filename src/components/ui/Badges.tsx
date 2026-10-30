@@ -56,20 +56,28 @@ export const CategoriaBadge: React.FC<{ categoria: BedrockCategoria }> = ({ cate
 };
 
 export const UrgenciaBadge: React.FC<{ urgencia: BedrockUrgencia }> = ({ urgencia }) => {
+  const isCritica = urgencia === 'CRITICA';
   const styles: Record<BedrockUrgencia, string> = {
     CRITICA:
-      'bg-[#ff4d6d]/15 text-[#ff8096] border-[#ff4d6d]/40 shadow-[0_0_12px_rgba(255,77,109,0.2)]',
-    ALTA: 'bg-[#ffcf99]/15 text-[#ffcf99] border-[#ffcf99]/40',
-    MODERADA: 'bg-[#8dc8fb]/15 text-[#8dc8fb] border-[#8dc8fb]/35',
+      'bg-[#ff3366]/20 text-[#ff8ba7] border-[#ff3366]/60 shadow-[0_0_16px_rgba(255,51,102,0.35)]',
+    ALTA: 'bg-[#ff9900]/20 text-[#ffd180] border-[#ff9900]/50 shadow-[0_0_12px_rgba(255,153,0,0.2)]',
+    MODERADA: 'bg-[#00c8ff]/15 text-[#80e5ff] border-[#00c8ff]/40',
   };
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-semibold border ${
+      className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-xs font-mono font-bold border tracking-wide ${
         styles[urgencia] || styles.ALTA
       }`}
     >
-      <AlertTriangle className="w-3.5 h-3.5" />
+      {isCritica ? (
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff3366] opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ff3366]"></span>
+        </span>
+      ) : (
+        <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+      )}
       URGENCIA: {urgencia}
     </span>
   );
@@ -77,19 +85,20 @@ export const UrgenciaBadge: React.FC<{ urgencia: BedrockUrgencia }> = ({ urgenci
 
 export const PrioridadBadge: React.FC<{ prioridad: PrioridadDespacho }> = ({ prioridad }) => {
   const colors: Record<PrioridadDespacho, string> = {
-    1: 'bg-[#8847ff]/25 text-[#e2d3fe] border-[#b080ff]/50',
-    2: 'bg-[#2a2338] text-[#c4b5fd] border-[#b080ff]/25',
-    3: 'bg-[#1f1a29] text-[#9ca3af] border-white/10',
+    1: 'bg-gradient-to-r from-[#8847ff]/30 to-[#b080ff]/20 text-[#f3e8ff] border-[#b080ff]/60 shadow-[0_0_12px_rgba(136,71,255,0.3)]',
+    2: 'bg-[#292238] text-[#d8b4fe] border-[#b080ff]/30',
+    3: 'bg-[#1c1826] text-[#a59bb8] border-white/10',
   };
 
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono font-bold border ${
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-bold border ${
         colors[prioridad] || colors[2]
       }`}
     >
-      <Zap className="w-3 h-3 text-[#b080ff]" />
-      P{prioridad} (prioridad_despacho: {prioridad})
+      <Zap className="w-3.5 h-3.5 text-[#b080ff] shrink-0" />
+      <span>P{prioridad}</span>
+      <span className="text-[10px] opacity-75 font-normal">(prioridad_despacho: {prioridad})</span>
     </span>
   );
 };
@@ -97,40 +106,41 @@ export const PrioridadBadge: React.FC<{ prioridad: PrioridadDespacho }> = ({ pri
 export const EstadoTrazabilidadBadge: React.FC<{ estado: EstadoTrazabilidad | string }> = ({
   estado,
 }) => {
-  const map: Record<string, { text: string; cls: string; icon: React.ReactNode }> = {
+  const map: Record<string, { text: string; cls: string; icon: React.ReactNode; isLive?: boolean }> = {
     REGISTRADO: {
       text: 'REGISTRADO',
-      cls: 'bg-[#b080ff]/15 text-[#e2d3fe] border-[#b080ff]/35',
+      cls: 'bg-[#b080ff]/15 text-[#e2d3fe] border-[#b080ff]/40',
       icon: <Package className="w-3.5 h-3.5" />,
     },
     ABIERTA: {
       text: 'ABIERTA',
-      cls: 'bg-[#ff80b5]/15 text-[#ff80b5] border-[#ff80b5]/35',
+      cls: 'bg-[#ff80b5]/15 text-[#ff80b5] border-[#ff80b5]/40',
       icon: <AlertTriangle className="w-3.5 h-3.5" />,
     },
     ASIGNADO: {
       text: 'ASIGNADO',
-      cls: 'bg-[#ffcf99]/15 text-[#ffcf99] border-[#ffcf99]/35',
+      cls: 'bg-[#ffcf99]/20 text-[#ffd9a3] border-[#ffcf99]/40',
       icon: <Zap className="w-3.5 h-3.5" />,
     },
     ASIGNADA: {
       text: 'ASIGNADA',
-      cls: 'bg-[#ffcf99]/15 text-[#ffcf99] border-[#ffcf99]/35',
+      cls: 'bg-[#ffcf99]/20 text-[#ffd9a3] border-[#ffcf99]/40',
       icon: <Zap className="w-3.5 h-3.5" />,
     },
     EN_RUTA: {
       text: 'EN RUTA',
-      cls: 'bg-[#80f4ff]/15 text-[#80f4ff] border-[#80f4ff]/35',
-      icon: <Truck className="w-3.5 h-3.5" />,
+      cls: 'bg-[#80f4ff]/20 text-[#80f4ff] border-[#80f4ff]/50 shadow-[0_0_14px_rgba(128,244,255,0.25)]',
+      icon: <Truck className="w-3.5 h-3.5 animate-pulse" />,
+      isLive: true,
     },
     ENTREGADO: {
       text: 'ENTREGADO',
-      cls: 'bg-[#80ffb5]/15 text-[#80ffb5] border-[#80ffb5]/35',
+      cls: 'bg-[#80ffb5]/20 text-[#80ffb5] border-[#80ffb5]/50 shadow-[0_0_14px_rgba(128,255,181,0.2)]',
       icon: <CheckCircle2 className="w-3.5 h-3.5" />,
     },
     ATENDIDA: {
       text: 'ATENDIDA',
-      cls: 'bg-[#80ffb5]/15 text-[#80ffb5] border-[#80ffb5]/35',
+      cls: 'bg-[#80ffb5]/20 text-[#80ffb5] border-[#80ffb5]/50 shadow-[0_0_14px_rgba(128,255,181,0.2)]',
       icon: <CheckCircle2 className="w-3.5 h-3.5" />,
     },
   };
@@ -139,8 +149,14 @@ export const EstadoTrazabilidadBadge: React.FC<{ estado: EstadoTrazabilidad | st
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-semibold border ${cfg.cls}`}
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold border tracking-wide ${cfg.cls}`}
     >
+      {cfg.isLive && (
+        <span className="relative flex h-2 w-2 mr-0.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#80f4ff] opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-[#80f4ff]"></span>
+        </span>
+      )}
       {cfg.icon}
       {cfg.text}
     </span>

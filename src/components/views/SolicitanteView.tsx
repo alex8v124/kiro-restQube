@@ -192,17 +192,26 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
             <span className="text-xs font-mono text-[#a59bb8] block mb-2">
               Cargar escenario de prueba rápida (Piura / Catacaos):
             </span>
-            <div className="flex flex-wrap gap-2">
-              {PRESET_REPORTES.map((p) => (
-                <button
-                  key={p.titulo}
-                  type="button"
-                  onClick={() => handleLoadPreset(p)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a1524] hover:bg-[#282038] text-[#e2d3fe] border border-[#b080ff]/25 hover:border-[#b080ff]/60 transition cursor-pointer"
-                >
-                  {p.titulo}
-                </button>
-              ))}
+            <div className="flex flex-wrap gap-2.5">
+              {PRESET_REPORTES.map((p, idx) => {
+                const colors = [
+                  'border-[#80f4ff]/40 bg-[#80f4ff]/10 text-[#80f4ff] hover:bg-[#80f4ff]/20',
+                  'border-[#ff80b5]/40 bg-[#ff80b5]/10 text-[#ff80b5] hover:bg-[#ff80b5]/20',
+                  'border-[#ffcf99]/40 bg-[#ffcf99]/10 text-[#ffcf99] hover:bg-[#ffcf99]/20',
+                  'border-[#b080ff]/40 bg-[#b080ff]/10 text-[#e2d3fe] hover:bg-[#b080ff]/20',
+                ];
+                return (
+                  <button
+                    key={p.titulo}
+                    type="button"
+                    onClick={() => handleLoadPreset(p)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer shadow-sm hover:scale-[1.02] flex items-center gap-1.5 ${colors[idx % colors.length]}`}
+                  >
+                    <Sparkles className="w-3 h-3" />
+                    {p.titulo}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -385,12 +394,35 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
               disponibilidad.
             </p>
 
-            {bedrockResult && (
+            {isClassifying ? (
+              <div className="mt-4 p-6 rounded-2xl bg-[#120e1c] border border-[#8847ff]/50 space-y-4 ai-shimmer shadow-[0_0_30px_rgba(136,71,255,0.25)]">
+                <div className="flex items-center gap-3">
+                  <Loader2 className="w-6 h-6 text-[#80f4ff] animate-spin" />
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Invocando Amazon Bedrock Runtime...</h4>
+                    <p className="text-xs font-mono text-[#b080ff]">
+                      anthropic.claude-3-haiku-20240307-v1:0 [us-east-1]
+                    </p>
+                  </div>
+                </div>
+                <div className="space-y-2 pt-2">
+                  <div className="h-3 rounded-full bg-white/10 animate-pulse w-3/4" />
+                  <div className="h-3 rounded-full bg-white/10 animate-pulse w-1/2" />
+                  <div className="h-3 rounded-full bg-white/10 animate-pulse w-5/6" />
+                </div>
+                <p className="text-xs text-[#a59bb8] italic pt-1">
+                  Extrayendo categoría de auxilio, nivel de urgencia y cálculo de prioridad_despacho...
+                </p>
+              </div>
+            ) : bedrockResult && (
               <div className="mt-4 space-y-3">
-                <div className="p-4 rounded-xl bg-[#120f19] border border-[#b080ff]/25 space-y-3">
+                <div className="p-4 rounded-xl bg-[#120f19] border border-[#b080ff]/30 space-y-3 shadow-inner">
                   <div className="flex items-center justify-between text-xs font-mono text-[#a59bb8]">
-                    <span>CLASIFICACIÓN ESTRUCTURADA</span>
-                    <span className="text-[#80ffb5]">
+                    <span className="font-semibold text-[#e2d3fe] flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-[#80ffb5]" />
+                      CLASIFICACIÓN ESTRUCTURADA
+                    </span>
+                    <span className="text-[#80ffb5] font-bold">
                       {bedrockResult.fallback ? 'FALLBACK DETERMINISTA' : 'BEDROCK RUNTIME OK'}
                     </span>
                   </div>
@@ -402,7 +434,7 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
                   </div>
 
                   {bedrockResult.justificacion && (
-                    <p className="text-xs text-[#d6cce8] bg-[#1b1626] p-2.5 rounded-lg border border-white/5">
+                    <p className="text-xs text-[#d6cce8] bg-[#1b1626] p-3 rounded-xl border border-white/10 leading-relaxed">
                       {bedrockResult.justificacion}
                     </p>
                   )}
@@ -411,13 +443,13 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
                 {/* Bloque de código JSON exacto exigido por el manual */}
                 <div>
                   <div className="flex items-center justify-between text-[11px] font-mono text-[#a59bb8] mb-1.5">
-                    <span className="flex items-center gap-1.5">
-                      <FileCode2 className="w-3.5 h-3.5 text-[#80f4ff]" />
+                    <span className="flex items-center gap-1.5 font-semibold text-[#80f4ff]">
+                      <FileCode2 className="w-3.5 h-3.5" />
                       Payload JSON devuelto por el clasificador:
                     </span>
-                    <span>us-east-1</span>
+                    <span className="text-[#80ffb5] font-bold">Latencia: {bedrockResult.latencyMs || 180}ms</span>
                   </div>
-                  <pre className="p-3.5 rounded-xl bg-[#0b0910] border border-white/10 text-xs font-mono text-[#80ffb5] overflow-x-auto">
+                  <pre className="p-3.5 rounded-xl bg-[#0b0910] border border-white/10 text-xs font-mono text-[#80ffb5] overflow-x-auto shadow-inner">
                     {JSON.stringify(
                       {
                         categoria: bedrockResult.categoria,

@@ -208,19 +208,25 @@ export const TrazabilidadView: React.FC<TrazabilidadViewProps> = ({
             <div className="mt-6 relative pl-6 border-l-2 border-[#b080ff]/30 space-y-6">
               {detalle.eventos.map((ev) => (
                 <div key={ev.etapa} className="relative">
-                  {/* Nodo circular */}
+                  {/* Nodo circular con pulso activo */}
                   <span
                     className={`absolute -left-[33px] top-1 w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                      ev.completado
-                        ? 'bg-[#80ffb5] border-[#0e0c14] shadow-[0_0_12px_#80ffb5]'
-                        : 'bg-[#1e1929] border-[#6b6080]'
+                      ev.activo
+                        ? 'bg-[#80f4ff] border-[#0e0c14] shadow-[0_0_16px_#80f4ff]'
+                        : ev.completado
+                          ? 'bg-[#80ffb5] border-[#0e0c14] shadow-[0_0_12px_#80ffb5]'
+                          : 'bg-[#1e1929] border-[#6b6080]'
                     }`}
-                  />
+                  >
+                    {ev.activo && (
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#80f4ff] opacity-75" />
+                    )}
+                  </span>
 
                   <div
-                    className={`p-4 rounded-2xl border transition ${
+                    className={`p-4 rounded-2xl border transition-all ${
                       ev.activo
-                        ? 'bg-[#221a33] border-[#b080ff] shadow-[0_0_24px_rgba(176,128,255,0.2)]'
+                        ? 'bg-[#221a33] border-[#b080ff] shadow-[0_0_24px_rgba(176,128,255,0.25)] scale-[1.01]'
                         : ev.completado
                           ? 'bg-[#14111d] border-[#80ffb5]/30'
                           : 'bg-[#110e18]/60 border-white/5 opacity-65'
@@ -230,7 +236,8 @@ export const TrazabilidadView: React.FC<TrazabilidadViewProps> = ({
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-bold text-white">{ev.titulo}</span>
                         {ev.activo && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#80f4ff]/20 text-[#80f4ff] border border-[#80f4ff]/40">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#80f4ff]/20 text-[#80f4ff] border border-[#80f4ff]/40 shadow-sm flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#80f4ff] animate-pulse" />
                             ETAPA ACTUAL
                           </span>
                         )}
