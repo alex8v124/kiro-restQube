@@ -28,7 +28,7 @@ const ENV_API_URL = (import.meta.env.VITE_API_URL || DEFAULT_LAMBDA_URL)
   .trim()
   .replace(/\/+$/, '');
 
-const ENV_TEAM_ID = (import.meta.env.VITE_TEAM_ID || 'NexusLabs').trim();
+const ENV_TEAM_ID = (import.meta.env.VITE_TEAM_ID || 'T068').trim();
 
 const STORAGE_KEYS = {
   API_URL: 'fen_kiro_api_url',

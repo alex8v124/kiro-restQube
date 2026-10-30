@@ -64,7 +64,7 @@ def _make_event(method: str, path: str, body: dict | None = None) -> dict:
     }
 
 
-def test_health_endpoint(monkeypatch):
+def test_health(monkeypatch):
     fake_table = FakeDynamoTable()
     monkeypatch.setattr(app, "TABLE", fake_table)
 
