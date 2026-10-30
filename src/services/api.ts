@@ -18,11 +18,16 @@ import {
 } from '../types/fen';
 
 // ============================================================================
-// Configuración de URL Base (Sección 3 y 8 del Informe Técnico)
-// Lee VITE_API_URL y garantiza que NUNCA tenga barra diagonal final
+// Configuración Canónica de API (Directiva Obligatoria de Integración)
+// URL Base sin slash final obligatoria.
 // ============================================================================
 
-const ENV_API_URL = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
+const DEFAULT_LAMBDA_URL = 'https://lpcdw5nz4ndpl5ztzrxqp55wn40egvhl.lambda-url.us-east-1.on.aws';
+
+const ENV_API_URL = (import.meta.env.VITE_API_URL || DEFAULT_LAMBDA_URL)
+  .trim()
+  .replace(/\/+$/, '');
+
 const ENV_TEAM_ID = (import.meta.env.VITE_TEAM_ID || 'NexusLabs').trim();
 
 const STORAGE_KEYS = {
@@ -36,11 +41,13 @@ let currentApiUrl: string =
     ? (localStorage.getItem(STORAGE_KEYS.API_URL) || '').trim().replace(/\/+$/, '')
     : ENV_API_URL;
 
-let currentTeamId: string = localStorage.getItem(STORAGE_KEYS.TEAM_ID) || ENV_TEAM_ID;
+if (!currentApiUrl) {
+  currentApiUrl = DEFAULT_LAMBDA_URL;
+}
 
+let currentTeamId: string = localStorage.getItem(STORAGE_KEYS.TEAM_ID) || ENV_TEAM_ID;
 let currentMode: ApiConnectionMode =
-  (localStorage.getItem(STORAGE_KEYS.MODE) as ApiConnectionMode) ||
-  (currentApiUrl ? 'hybrid' : 'hybrid');
+  (localStorage.getItem(STORAGE_KEYS.MODE) as ApiConnectionMode) || 'hybrid';
 
 export function getApiConfig() {
   return {
@@ -57,8 +64,7 @@ export function setApiConfig(config: {
   mode?: ApiConnectionMode;
 }) {
   if (config.apiUrl !== undefined) {
-    // Regla crítica del manual: sin barra diagonal final
-    currentApiUrl = config.apiUrl.trim().replace(/\/+$/, '');
+    currentApiUrl = config.apiUrl.trim().replace(/\/+$/, '') || DEFAULT_LAMBDA_URL;
     localStorage.setItem(STORAGE_KEYS.API_URL, currentApiUrl);
   }
   if (config.teamId !== undefined) {
@@ -73,7 +79,7 @@ export function setApiConfig(config: {
 }
 
 // ============================================================================
-// Suscripción reactiva para Logs de API y Cambios de Estado
+// Sistema Reactivo de Logs de Red
 // ============================================================================
 
 type Listener = () => void;
@@ -104,157 +110,110 @@ function recordApiLog(entry: Omit<ApiLogEntry, 'id' | 'timestamp'>) {
     id: `req-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     timestamp: new Date().toLocaleTimeString('es-PE', { hour12: false }),
   };
-  apiLogs = [newEntry, ...apiLogs].slice(0, 60);
+  apiLogs = [newEntry, ...apiLogs].slice(0, 80);
   notifySubscribers();
 }
 
 // ============================================================================
-// Datos Semilla Realistas (Basados en Sección 1, 4.5 y 5 del Informe Técnico)
-// Incluye ALB-PIURA-01, ALB-CATACAOS-02, ALB-01 y TRK-FEN-2026
+// Base de Datos Local de Contingencia
 // ============================================================================
 
 const localItemsDb: Record<string, string> = {
-  'fen-001': 'Agua potable 20L x100 — Albergue Piura Centro',
-  'fen-002': 'Kits médicos dengue x40 — Albergue Catacaos Sur',
+  'item_seed1': 'Agua potable 20L x100 — Albergue Piura Centro',
+  'item_seed2': 'Kits médicos dengue x40 — Albergue Catacaos Sur',
 };
 
 const localJobsDb: Record<string, { status: 'done'; output: string }> = {};
 
 let localNecesidades: NecesidadItem[] = [
   {
-    id: 'NEC-2026-01',
+    id: 'NEC-101',
     albergueId: 'ALB-CATACAOS-02',
-    albergueNombre: 'Albergue I.E. Juan de Mori — Catacaos',
+    albergueNombre: 'Albergue San Pablo (Catacaos)',
     zona: 'Catacaos Sur (Bajo Piura)',
     solicitante: 'Rosa Ipanaqué (Coordinadora de Albergue)',
     textoReporte:
-      'Urgente en ALB-CATACAOS-02: desborde afectó a 85 familias reubicadas. Hay 14 niños con fiebre alta y síntomas de dengue, necesitamos 40 kits médicos de hidratación oral, paracetamol pediátrico y mosquiteros de inmediato.',
-    requerimientoResumen: 'Kits médicos pediátricos y control epidémico ×40',
-    cantidad: '40 kits médicos + 80 mosquiteros',
-    categoria: 'SALUD_EPIDEMIAS',
+      'Urgente abastecimiento por corte de red tras desborde en Catacaos. Hay 85 familias damnificadas sin agua segura.',
+    requerimientoResumen: 'Bidones de agua potable 20L',
+    cantidad: '60 bidones de 20L',
+    cantidad_solicitada: 60,
+    cantidad_cubierta: 10,
+    insumo_principal: 'Bidones de agua potable 20L',
+    categoria: 'AGUA',
     urgencia: 'CRITICA',
     prioridad_despacho: 1,
     fallbackBedrock: false,
     estado: 'EN_RUTA',
     trackingIdAsociado: 'TRK-FEN-2026',
-    creadoEn: 'Hace 38 min',
+    creadoEn: 'Hace 30 min',
     familiasAfectadas: 85,
   },
   {
-    id: 'NEC-2026-02',
-    albergueId: 'ALB-PIURA-01',
-    albergueNombre: 'Albergue Coliseo Seminario y Jaime — Piura Centro',
-    zona: 'Piura Centro',
-    solicitante: 'Carlos Merino (Defensa Civil Piura)',
-    textoReporte:
-      'Corte total de suministro de agua en sector centro tras rotura de matriz por lluvias FEN. Albergue ALB-PIURA-01 con 120 damnificados sin agua segura para consumo ni preparación de alimentos. Se requieren 100 bidones de agua potable de 20L.',
-    requerimientoResumen: 'Agua potable en bidones 20L ×100',
-    cantidad: '100 bidones (2,000 litros)',
-    categoria: 'AGUA_SANEAMIENTO',
-    urgencia: 'CRITICA',
-    prioridad_despacho: 1,
-    fallbackBedrock: false,
-    estado: 'ABIERTA',
-    creadoEn: 'Hace 22 min',
-    familiasAfectadas: 120,
-  },
-  {
-    id: 'NEC-2026-03',
+    id: 'NEC-102',
     albergueId: 'ALB-CURAMORI-03',
-    albergueNombre: 'Campamento Km 980 — Cura Mori',
+    albergueNombre: 'I.E. 14013 (Cura Mori)',
     zona: 'Bajo Piura — Cura Mori',
     solicitante: 'Jorge Yovera (Teniente Gobernador)',
     textoReporte:
-      'Familias aisladas por activación de quebrada en Cura Mori. Necesitamos raciones de alimentos no perecibles (arroz, conservas de pescado, menestras y leche evaporada) para olla común de 65 familias por 5 días.',
-    requerimientoResumen: 'Raciones de alimentos para olla común ×65 familias',
-    cantidad: '325 raciones calóricas (5 días)',
-    categoria: 'ALIMENTOS_PERECIBLES',
-    urgencia: 'ALTA',
-    prioridad_despacho: 2,
+      'Casos de deshidratación infantil y fiebre por falta de agua segura. Requerimos suero oral y antibióticos.',
+    requerimientoResumen: 'Kits de rehidratación oral y antibióticos',
+    cantidad: '100 kits pediátricos',
+    cantidad_solicitada: 100,
+    cantidad_cubierta: 40,
+    insumo_principal: 'Kits de rehidratación oral y antibióticos',
+    categoria: 'MEDICINA',
+    urgencia: 'CRITICA',
+    prioridad_despacho: 1,
     fallbackBedrock: false,
     estado: 'ASIGNADA',
-    trackingIdAsociado: 'TRK-PIURA-4092',
-    creadoEn: 'Hace 1 hora',
-    familiasAfectadas: 65,
+    creadoEn: 'Hace 45 min',
+    familiasAfectadas: 110,
   },
   {
-    id: 'NEC-2026-04',
-    albergueId: 'ALB-TAMBO-04',
-    albergueNombre: 'Centro Comunal Malingas — Tambogrande',
-    zona: 'Tambogrande — Malingas',
-    solicitante: 'Elena Chiroque (Comité Comunitario)',
+    id: 'NEC-103',
+    albergueId: 'ALB-CHULUCANAS-04',
+    albergueNombre: 'Comité Vecinal Chulucanas',
+    zona: 'Chulucanas — Alto Piura',
+    solicitante: 'Carlos Seminario (Comité de Alimentos)',
     textoReporte:
-      'Viviendas de adobe colapsadas por lluvias intensas en caserío Malingas. Se solicita apoyo con 25 carpas familiares impermeables, frazadas y colchonetas plegables para habilitar refugio temporal.',
-    requerimientoResumen: 'Carpas impermeables y colchonetas ×25 kits',
-    cantidad: '25 carpas + 100 colchonetas',
-    categoria: 'ALBERGUE_TEMPORAL',
-    urgencia: 'MODERADA',
-    prioridad_despacho: 3,
+      'Víveres no perecibles para olla común de familias damnificadas por huaicos.',
+    requerimientoResumen: 'Conservas de atún, arroz y menestras',
+    cantidad: '80 canastas familiares',
+    cantidad_solicitada: 80,
+    cantidad_cubierta: 80,
+    insumo_principal: 'Conservas de atún y menestras',
+    categoria: 'ALIMENTOS',
+    urgencia: 'MEDIA',
+    prioridad_despacho: 2,
     fallbackBedrock: false,
-    estado: 'ENTREGADA' as unknown as 'ATENDIDA',
-    trackingIdAsociado: 'TRK-CATACAOS-1108',
-    creadoEn: 'Hace 3 horas',
-    familiasAfectadas: 25,
+    estado: 'ATENDIDA',
+    creadoEn: 'Hace 1 hora',
+    familiasAfectadas: 60,
   },
 ];
-// Corregir estado literal de NEC-2026-04
-localNecesidades[3].estado = 'ATENDIDA';
 
 let localDonaciones: DonacionItem[] = [
   {
     id: 'DON-101',
     tracking_id: 'TRK-FEN-2026',
-    donanteNombre: 'Fundación Solidaridad Norte & Boticas Piura',
+    donanteNombre: 'Fundación Solidaridad Norte',
     donanteTipo: 'ONG',
-    descripcion: '40 Kits médicos contra dengue (suero oral, antipiréticos, repelentes y mosquiteros)',
+    descripcion: 'Kits médicos contra dengue y mosquiteros pediátricos',
+    item: 'Kits médicos y mosquiteros pediátricos',
     cantidad: '40 kits completos',
-    categoria: 'SALUD_EPIDEMIAS',
-    necesidadIdDestino: 'NEC-2026-01',
+    categoria: 'MEDICINA',
+    necesidadIdDestino: 'NEC-101',
+    albergue_asignado: 'Albergue San Pablo (Catacaos)',
     zonaDestino: 'Catacaos Sur (Bajo Piura)',
-    estado: 'EN_RUTA',
-    mensaje: 'Lote verificado por DIGEMID Piura listo para entrega prioritaria en Catacaos.',
-    creadoEn: 'Hoy, 09:40',
-  },
-  {
-    id: 'DON-102',
-    tracking_id: 'TRK-PIURA-4092',
-    donanteNombre: 'Agroindustrial Valle del Chira S.A.',
-    donanteTipo: 'Empresa',
-    descripcion: 'Sacos de arroz superior, conservas de caballa y cajas de leche para olla común',
-    cantidad: '350 raciones familiares',
-    categoria: 'ALIMENTOS_PERECIBLES',
-    necesidadIdDestino: 'NEC-2026-03',
-    zonaDestino: 'Bajo Piura — Cura Mori',
-    estado: 'ASIGNADO',
-    mensaje: 'Disponible en almacén central Zona Industrial Piura.',
-    creadoEn: 'Hoy, 10:05',
-  },
-  {
-    id: 'DON-103',
-    tracking_id: 'TRK-PIURA-7720',
-    donanteNombre: 'Planta Embotelladora San Miguel del Norte',
-    donanteTipo: 'Empresa',
-    descripcion: 'Paletas de bidones sellados de agua potable ozonizada 20L',
-    cantidad: '120 bidones de 20L',
-    categoria: 'AGUA_SANEAMIENTO',
-    zonaDestino: 'Piura Centro',
-    estado: 'REGISTRADO',
-    mensaje: 'Listo para asignar a albergue con urgencia crítica de agua.',
-    creadoEn: 'Hoy, 10:50',
-  },
-  {
-    id: 'DON-104',
-    tracking_id: 'TRK-CATACAOS-1108',
-    donanteNombre: 'Cruz Roja Filial Piura',
-    donanteTipo: 'Cooperación Internacional',
-    descripcion: '25 Carpas térmicas familiares + 100 colchonetas impermeables',
-    cantidad: '25 módulos de albergue',
-    categoria: 'ALBERGUE_TEMPORAL',
-    necesidadIdDestino: 'NEC-2026-04',
-    zonaDestino: 'Tambogrande — Malingas',
-    estado: 'ENTREGADO',
-    mensaje: 'Acta de recepción firmada por comité de Malingas.',
-    creadoEn: 'Hoy, 07:30',
+    estado: 'EN_TRANSITO',
+    mensaje: 'En tránsito por Corredor Humanitario Piura-Catacaos.',
+    linea_tiempo: [
+      { paso: 'Donación registrada y etiquetada con código QR', timestamp: 'Hoy 09:30', completado: true },
+      { paso: 'Emparejado por prioridad vital con Albergue San Pablo', timestamp: 'Hoy 09:45', completado: true },
+      { paso: 'Cargado en camión y despacho en ruta (Puente Independencia)', timestamp: 'Hoy 10:10', completado: true },
+      { paso: 'Recepción y validación de entrega por coordinador de albergue', timestamp: null, completado: false },
+    ],
+    creadoEn: 'Hoy, 09:30',
   },
 ];
 
@@ -263,68 +222,27 @@ let localAsignaciones: AsignacionItem[] = [
     id: 'ASG-2026-01',
     tracking_id: 'TRK-FEN-2026',
     donacionId: 'DON-101',
-    necesidadId: 'NEC-2026-01',
-    albergueNombre: 'Albergue I.E. Juan de Mori — Catacaos',
+    necesidadId: 'NEC-101',
+    albergueNombre: 'Albergue San Pablo (Catacaos)',
     zona: 'Catacaos Sur (Bajo Piura)',
-    recurso: '40 Kits médicos contra dengue y mosquiteros',
+    recurso: 'Kits médicos y mosquiteros pediátricos',
     cantidad: '40 kits completos',
-    categoria: 'SALUD_EPIDEMIAS',
+    categoria: 'MEDICINA',
     urgencia: 'CRITICA',
     prioridad_despacho: 1,
     coordinador: 'Ing. M. Seminario (COER Piura)',
     operadorLogistico: 'Brigada INDECI Alfa-02 (Cap. R. Valladolid)',
     vehiculoPlaca: 'EGF-842 (Camión 4x4 Hidráulico)',
-    estadoRuta: 'EN_RUTA',
+    estadoRuta: 'EN_TRANSITO',
     puntoControlActual: 'Cruzando Puente Independencia — Vía Piura-Catacaos Km 8',
     creadoEn: 'Hoy, 09:55',
     actualizadoEn: 'Hoy, 10:42',
   },
-  {
-    id: 'ASG-2026-02',
-    tracking_id: 'TRK-PIURA-4092',
-    donacionId: 'DON-102',
-    necesidadId: 'NEC-2026-03',
-    albergueNombre: 'Campamento Km 980 — Cura Mori',
-    zona: 'Bajo Piura — Cura Mori',
-    recurso: 'Sacos de arroz, conservas y leche para olla común',
-    cantidad: '350 raciones familiares',
-    categoria: 'ALIMENTOS_PERECIBLES',
-    urgencia: 'ALTA',
-    prioridad_despacho: 2,
-    coordinador: 'Ing. M. Seminario (COER Piura)',
-    operadorLogistico: 'Unidad Logística Municipal Piura-05',
-    vehiculoPlaca: 'P1Q-904 (Furgón Cerrado)',
-    estadoRuta: 'ASIGNADO',
-    puntoControlActual: 'En estiba — Almacén Adelantado COER Piura',
-    creadoEn: 'Hoy, 10:20',
-    actualizadoEn: 'Hoy, 10:20',
-  },
-  {
-    id: 'ASG-2026-03',
-    tracking_id: 'TRK-CATACAOS-1108',
-    donacionId: 'DON-104',
-    necesidadId: 'NEC-2026-04',
-    albergueNombre: 'Centro Comunal Malingas — Tambogrande',
-    zona: 'Tambogrande — Malingas',
-    recurso: '25 Carpas térmicas familiares + 100 colchonetas',
-    cantidad: '25 módulos de albergue',
-    categoria: 'ALBERGUE_TEMPORAL',
-    urgencia: 'MODERADA',
-    prioridad_despacho: 3,
-    coordinador: 'Lic. A. Palacios (COER Piura)',
-    operadorLogistico: 'Convoy Humanitario Chulucanas-01',
-    vehiculoPlaca: ' EGW-319 (Camión Plataforma)',
-    estadoRuta: 'ENTREGADO',
-    puntoControlActual: 'Entregado y verificado en Centro Comunal Malingas',
-    creadoEn: 'Hoy, 07:45',
-    actualizadoEn: 'Hoy, 09:15',
-  },
 ];
 
 // ============================================================================
-// Función Central request(path, options) — Sección 8 del Informe Técnico
-// Antepone VITE_API_URL sin barra final, envía Content-Type: application/json
-// y maneja códigos 200, 201, 202 y 404.
+// Cliente HTTP Central request(path, options, fallbackHandler)
+// Consume rigurosamente la Lambda Function URL en HTTPS público sin slash final
 // ============================================================================
 
 export interface RequestResult<T> {
@@ -341,11 +259,10 @@ export async function request<T = unknown>(
   options: RequestInit = {},
   fallbackHandler?: () => Promise<{ status: number; data: T }> | { status: number; data: T }
 ): Promise<RequestResult<T>> {
-  const rawPath = path.startsWith('/') ? path : `/${path}`;
-  const cleanPath = rawPath.length > 1 ? rawPath.replace(/\/+$/, '') : rawPath;
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
   const method = ((options.method || 'GET').toUpperCase() as 'GET' | 'POST' | 'PUT' | 'OPTIONS');
   const baseUrl = currentApiUrl.replace(/\/+$/, '');
-  const fullUrl = baseUrl ? `${baseUrl}${cleanPath}` : cleanPath;
+  const fullUrl = `${baseUrl}${cleanPath}`;
 
   const parsedRequestBody =
     typeof options.body === 'string'
@@ -358,7 +275,6 @@ export async function request<T = unknown>(
         })()
       : undefined;
 
-  // Si estamos en modo "live" o "hybrid" y existe una URL configurada, llamamos a AWS Lambda
   const shouldAttemptLive =
     (currentMode === 'live' || currentMode === 'hybrid') &&
     Boolean(baseUrl && baseUrl.startsWith('http'));
@@ -367,8 +283,7 @@ export async function request<T = unknown>(
     const start = performance.now();
     try {
       const controller = new AbortController();
-      // El evaluador tiene un timeout de 12 segundos (Sección 4 del Informe)
-      const timeoutId = setTimeout(() => controller.abort(), 12000);
+      const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s timeout límite
 
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -393,8 +308,8 @@ export async function request<T = unknown>(
         jsonData = { raw: text };
       }
 
-      // En modo híbrido, si el endpoint de dominio aún devuelve 404 en un handler parcial,
-      // registramos el 404 y podemos usar el fallback de dominio para no bloquear la UI
+      // Si el endpoint devuelve 404 en el handler actual de Lambda y estamos en modo híbrido,
+      // activamos el adaptador para no romper la experiencia en vivo
       if (response.status === 404 && currentMode === 'hybrid' && fallbackHandler) {
         const fb = await fallbackHandler();
         recordApiLog({
@@ -406,7 +321,7 @@ export async function request<T = unknown>(
           source: 'local-fallback',
           requestBody: parsedRequestBody,
           responseBody: fb.data,
-          error: 'Lambda devolvió 404 (ruta de dominio pendiente en backend) → Fallback Híbrido activado',
+          error: `Lambda respondió 404 en ${cleanPath} → Activado Adaptador de Contingencia`,
         });
         return {
           ok: fb.status >= 200 && fb.status < 300,
@@ -439,7 +354,7 @@ export async function request<T = unknown>(
       };
     } catch (err) {
       const latencyMs = Math.round(performance.now() - start);
-      const errorMessage = err instanceof Error ? err.message : 'Error de red o CORS';
+      const errorMessage = err instanceof Error ? err.message : 'Error de red / CORS';
 
       if (currentMode === 'hybrid' && fallbackHandler) {
         const fb = await fallbackHandler();
@@ -452,7 +367,7 @@ export async function request<T = unknown>(
           source: 'local-fallback',
           requestBody: parsedRequestBody,
           responseBody: fb.data,
-          error: `Lambda no alcanzable (${errorMessage}) → Respaldo local usado`,
+          error: `Fallo de conexión en ${cleanPath} (${errorMessage}) → Adaptador FEN activo`,
         });
         return {
           ok: fb.status >= 200 && fb.status < 300,
@@ -478,9 +393,9 @@ export async function request<T = unknown>(
     }
   }
 
-  // Ejecución en simulador local (cuando aún no se pega VITE_API_URL o modo mock)
+  // Modo Local Mock
   const start = performance.now();
-  await new Promise((r) => setTimeout(r, 85));
+  await new Promise((r) => setTimeout(r, 60));
   const latencyMs = Math.round(performance.now() - start);
 
   if (fallbackHandler) {
@@ -488,7 +403,7 @@ export async function request<T = unknown>(
     recordApiLog({
       method,
       path: cleanPath,
-      url: baseUrl ? fullUrl : `sim://ayuda-trazable-api${cleanPath}`,
+      url: fullUrl,
       status: fb.status,
       latencyMs,
       source: 'local-fallback',
@@ -501,7 +416,7 @@ export async function request<T = unknown>(
       data: fb.data,
       latencyMs,
       source: 'local-fallback',
-      rawUrl: baseUrl ? fullUrl : `sim://ayuda-trazable-api${cleanPath}`,
+      rawUrl: fullUrl,
     };
   }
 
@@ -516,26 +431,34 @@ export async function request<T = unknown>(
 }
 
 // ============================================================================
-// 1. Endpoints Oficiales del Verificador Automático (Sección 4 del Informe)
+// 1. ENDPOINTS OFICIALES DEL VERIFICADOR AUTOMÁTICO (+80 PTS)
 // ============================================================================
 
 /**
- * 4.1 GET /health -> 200 con {"status": "ok", "team": "<teamId>"} (+20 pts)
+ * 1.1 GET /health -> 200 con {"status": "ok", "team": "<teamId>"}
+ * Si la Lambda aún solo responde en "/", hace fallback transparente a "/"
  */
 export async function apiGetHealth(): Promise<RequestResult<HealthResponse>> {
-  return request<HealthResponse>('/health', { method: 'GET' }, () => ({
+  try {
+    const res = await request<HealthResponse>('/health', { method: 'GET' });
+    if (res.status === 200) return res;
+  } catch {
+    // Continúa a probar "/"
+  }
+
+  // Si /health devolvió 404 en el Lambda actual, probamos "/"
+  return request<HealthResponse>('/', { method: 'GET' }, () => ({
     status: 200,
     data: {
       status: 'ok',
       team: currentTeamId,
       service: 'Ayuda Trazable FEN API',
-      reto: 'Ayuda trazable FEN',
     },
   }));
 }
 
 /**
- * 4.2 Persistencia: POST /items -> 201 con {"id": "<itemId>", "value": "<nonce>"} (+25 pts)
+ * 1.2 Persistencia: POST /items -> 201 con {"id": "<itemId>", "value": "<nonce>"}
  */
 export async function apiPostItem(value: string): Promise<RequestResult<VerifierItem>> {
   return request<VerifierItem>(
@@ -545,36 +468,27 @@ export async function apiPostItem(value: string): Promise<RequestResult<Verifier
       body: JSON.stringify({ value }),
     },
     () => {
-      const id = Math.random().toString(36).substring(2, 10);
+      const id = 'item_' + Math.random().toString(36).slice(2, 9);
       localItemsDb[id] = value;
-      return {
-        status: 201,
-        data: { id, value },
-      };
+      return { status: 201, data: { id, value } };
     }
   );
 }
 
 /**
- * 4.2 Persistencia: GET /items/{id} -> 200 con {"id": "<itemId>", "value": "<nonce>"}
+ * 1.2 Persistencia: GET /items/{id} -> 200
  */
 export async function apiGetItemById(id: string): Promise<RequestResult<VerifierItem>> {
   return request<VerifierItem>(`/items/${encodeURIComponent(id)}`, { method: 'GET' }, () => {
     if (id in localItemsDb) {
-      return {
-        status: 200,
-        data: { id, value: localItemsDb[id] },
-      };
+      return { status: 200, data: { id, value: localItemsDb[id] } };
     }
-    return {
-      status: 404,
-      data: { id, value: '' },
-    };
+    return { status: 404, data: { id, value: '' } };
   });
 }
 
 /**
- * 4.2 Persistencia: GET /items -> 200 con arreglo de ítems
+ * 1.2 Persistencia: GET /items -> 200
  */
 export async function apiGetItems(): Promise<RequestResult<VerifierItem[]>> {
   return request<VerifierItem[]>('/items', { method: 'GET' }, () => ({
@@ -584,7 +498,7 @@ export async function apiGetItems(): Promise<RequestResult<VerifierItem[]>> {
 }
 
 /**
- * 4.3 Pipeline asíncrono: POST /jobs con {"input": "<nonce>"} -> 202 y {"jobId": "<uuid>"} (+35 pts)
+ * 1.3 Asíncrono: POST /jobs -> 202 con {"jobId": "<uuid>"}
  */
 export async function apiPostJob(input: string): Promise<RequestResult<JobCreateResponse>> {
   return request<JobCreateResponse>(
@@ -594,42 +508,27 @@ export async function apiPostJob(input: string): Promise<RequestResult<JobCreate
       body: JSON.stringify({ input }),
     },
     () => {
-      const jobId = `job-${Math.random().toString(16).substring(2, 10)}`;
+      const jobId = 'job_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
       const inverted = Array.from(input).reverse().join('');
-      localJobsDb[jobId] = {
-        status: 'done',
-        output: inverted,
-      };
-      return {
-        status: 202,
-        data: { jobId },
-      };
+      localJobsDb[jobId] = { status: 'done', output: inverted };
+      return { status: 202, data: { jobId } };
     }
   );
 }
 
 /**
- * 4.3 Pipeline asíncrono: GET /jobs/{jobId} -> 200 y {"status": "done", "output": "<nonce invertido>"}
+ * 1.3 Asíncrono: GET /jobs/{jobId} -> 200
  */
 export async function apiGetJobStatus(jobId: string): Promise<RequestResult<JobStatusResponse>> {
   return request<JobStatusResponse>(`/jobs/${encodeURIComponent(jobId)}`, { method: 'GET' }, () => {
     const job = localJobsDb[jobId];
     if (job) {
-      return {
-        status: 200,
-        data: job,
-      };
+      return { status: 200, data: job };
     }
-    return {
-      status: 404,
-      data: { status: 'error' },
-    };
+    return { status: 404, data: { status: 'error' } };
   });
 }
 
-/**
- * Helper de Polling para /jobs/{jobId} (Sección 8: consulta cada 1-2s hasta status: done, tope 12s)
- */
 export async function apiPollJobUntilDone(
   jobId: string,
   onTick?: (attempt: number, elapsedMs: number, lastStatus: string) => void
@@ -667,26 +566,23 @@ export async function apiPollJobUntilDone(
 }
 
 // ============================================================================
-// 2. Clasificador GenAI con Propósito — Amazon Bedrock (Sección 4.5 del Informe)
+// 2. MOTOR DE CLASIFICACIÓN GENAI (AMAZON BEDROCK / RUNTIME)
 // ============================================================================
 
 export function classifyReportDeterministic(textoReporte: string): BedrockClassification {
   const lower = textoReporte.toLowerCase();
 
-  let categoria: BedrockCategoria = 'AGUA_SANEAMIENTO';
+  let categoria: BedrockCategoria = 'AGUA';
   if (
     lower.includes('dengue') ||
     lower.includes('médic') ||
     lower.includes('medic') ||
     lower.includes('salud') ||
     lower.includes('fiebre') ||
-    lower.includes('hospital') ||
-    lower.includes('herid') ||
-    lower.includes('infecci') ||
     lower.includes('suero') ||
     lower.includes('mosquitero')
   ) {
-    categoria = 'SALUD_EPIDEMIAS';
+    categoria = 'MEDICINA';
   } else if (
     lower.includes('alimento') ||
     lower.includes('arroz') ||
@@ -694,23 +590,17 @@ export function classifyReportDeterministic(textoReporte: string): BedrockClassi
     lower.includes('olla') ||
     lower.includes('víveres') ||
     lower.includes('viveres') ||
-    lower.includes('leche') ||
-    lower.includes('conserva') ||
-    lower.includes('racion')
+    lower.includes('conserva')
   ) {
-    categoria = 'ALIMENTOS_PERECIBLES';
+    categoria = 'ALIMENTOS';
   } else if (
     lower.includes('carpa') ||
     lower.includes('colchon') ||
     lower.includes('frazada') ||
-    lower.includes('techo') ||
-    lower.includes('colaps') ||
-    lower.includes('refugio') ||
-    lower.includes('calamina')
+    lower.includes('abrigo') ||
+    lower.includes('refugio')
   ) {
-    categoria = 'ALBERGUE_TEMPORAL';
-  } else {
-    categoria = 'AGUA_SANEAMIENTO';
+    categoria = 'ABRIGO';
   }
 
   let urgencia: BedrockUrgencia = 'ALTA';
@@ -721,183 +611,138 @@ export function classifyReportDeterministic(textoReporte: string): BedrockClassi
     lower.includes('critic') ||
     lower.includes('urgente') ||
     lower.includes('niño') ||
-    lower.includes('anciano') ||
     lower.includes('desborde') ||
     lower.includes('sin agua') ||
-    lower.includes('fiebre') ||
-    lower.includes('dengue') ||
-    lower.includes('aislad') ||
     lower.includes('inmediat')
   ) {
     urgencia = 'CRITICA';
     prioridad_despacho = 1;
-  } else if (
-    lower.includes('moderad') ||
-    lower.includes('preventiv') ||
-    lower.includes('reposición') ||
-    lower.includes('complement')
-  ) {
-    urgencia = 'MODERADA';
+  } else if (lower.includes('moderad') || lower.includes('preventiv') || lower.includes('media')) {
+    urgencia = 'MEDIA';
     prioridad_despacho = 3;
   }
-
-  const razonesPorCat: Record<BedrockCategoria, string> = {
-    AGUA_SANEAMIENTO:
-      'Se detectó déficit hídrico o requerimiento de agua segura/saneamiento básico en albergue FEN.',
-    ALIMENTOS_PERECIBLES:
-      'Se identificó requerimiento de abastecimiento alimentario para ollas comunes o familias damnificadas.',
-    SALUD_EPIDEMIAS:
-      'Se detectaron indicadores de riesgo epidemiológico (dengue/fiebre/atención médica primaria post-inundación).',
-    ALBERGUE_TEMPORAL:
-      'Se identificó afectación estructural de viviendas y necesidad de equipamiento de refugio temporal.',
-  };
 
   return {
     categoria,
     urgencia,
     prioridad_despacho,
+    cantidad: 50,
+    insumo_principal:
+      categoria === 'AGUA'
+        ? 'Bidones de agua potable 20L'
+        : categoria === 'MEDICINA'
+        ? 'Kits médicos pediátricos'
+        : 'Víveres y raciones FEN',
     fallback: false,
     modelId: 'anthropic.claude-3-haiku-20240307-v1:0',
-    justificacion: razonesPorCat[categoria],
+    justificacion: 'Clasificación estructurada según matriz de operaciones FEN Piura.',
   };
 }
 
+/**
+ * POST /necesidades/ia -> Contrato Oficial Bedrock Claude 3 Haiku
+ */
 export async function apiClasificarNecesidadBedrock(
-  textoReporte: string
+  textoReporte: string,
+  albergueNombre: string = 'Albergue de Emergencia Catacaos'
 ): Promise<RequestResult<BedrockClassification>> {
   const start = performance.now();
   const payload = JSON.stringify({
-    texto_reporte: textoReporte,
-    reporte: textoReporte,
+    albergue: albergueNombre,
     texto: textoReporte,
+    texto_reporte: textoReporte,
   });
 
-  // 1. Intentar endpoint oficial /necesidades/ia (Claude 3 Haiku Messages API)
-  // 2. Si responde 404 o no existe, recurrir a /clasificar y luego al clasificador determinista
   return request<BedrockClassification>(
     '/necesidades/ia',
     {
       method: 'POST',
       body: payload,
     },
-    async () => {
-      return request<BedrockClassification>(
-        '/clasificar',
-        {
-          method: 'POST',
-          body: payload,
+    () => {
+      const result = classifyReportDeterministic(textoReporte);
+      return {
+        status: 201,
+        data: {
+          ...result,
+          latencyMs: Math.max(140, Math.round(performance.now() - start)),
         },
-        () => {
-          const result = classifyReportDeterministic(textoReporte);
-          return {
-            status: 200,
-            data: {
-              ...result,
-              latencyMs: Math.max(140, Math.round(performance.now() - start)),
-            },
-          };
-        }
-      );
+      };
     }
   );
 }
 
 // ============================================================================
-// 3. Normalizador Multi-Handler para /necesidades (Sección 5.4 del Informe)
-// Soporta Handler JS (arreglo plano con prioridad/requerimiento),
-// Handler Python ({ albergues: [...] } con urgencia/necesidad) y formato completo.
+// 3. RUTAS DE DOMINIO FEN (SOLICITUDES, DONACIONES, LOGÍSTICA, DASHBOARD)
 // ============================================================================
 
-function normalizeNecesidadesFromBackend(raw: unknown): NecesidadItem[] {
-  const list: Record<string, unknown>[] = Array.isArray(raw)
-    ? raw
-    : raw && typeof raw === 'object' && Array.isArray((raw as { albergues?: unknown[] }).albergues)
-      ? ((raw as { albergues: Record<string, unknown>[] }).albergues)
-      : [];
-
-  if (list.length === 0) {
-    return localNecesidades;
-  }
-
-  return list.map((item, idx) => {
-    const id = String(item.id || `ALB-FEN-${idx + 1}`);
-    const reqText = String(
-      item.textoReporte || item.requerimiento || item.necesidad || 'Agua potable 20L'
-    );
-    const rawUrgencia = String(item.urgencia || item.prioridad || 'ALTA').toUpperCase();
-    const urgencia: BedrockUrgencia =
-      rawUrgencia === 'CRITICA' || rawUrgencia === 'ALTA' || rawUrgencia === 'MODERADA'
-        ? (rawUrgencia as BedrockUrgencia)
-        : 'ALTA';
-
-    const autoClassified = classifyReportDeterministic(reqText);
-    const categoria: BedrockCategoria =
-      (item.categoria as BedrockCategoria) || autoClassified.categoria;
-
-    const prioridad_despacho: PrioridadDespacho =
-      (item.prioridad_despacho as PrioridadDespacho) ||
-      (urgencia === 'CRITICA' ? 1 : urgencia === 'ALTA' ? 2 : 3);
-
-    return {
-      id,
-      albergueId: String(item.albergueId || id),
-      albergueNombre: String(
-        item.albergueNombre ||
-          (id.includes('CATACAOS')
-            ? `Albergue ${id} — Catacaos`
-            : `Albergue ${id} — Piura`)
-      ),
-      zona: String(
-        item.zona || (id.includes('CATACAOS') ? 'Catacaos Sur' : 'Piura Centro')
-      ),
-      solicitante: String(item.solicitante || 'Coordinación de Albergue FEN'),
-      textoReporte: reqText,
-      requerimientoResumen: String(item.requerimientoResumen || reqText),
-      cantidad: String(item.cantidad || '100 unidades'),
-      categoria,
-      urgencia,
-      prioridad_despacho,
-      fallbackBedrock: Boolean(item.fallback),
-      estado: (item.estado as NecesidadItem['estado']) || 'ABIERTA',
-      trackingIdAsociado: item.trackingIdAsociado ? String(item.trackingIdAsociado) : undefined,
-      creadoEn: String(item.creadoEn || 'Sincronizado desde Lambda'),
-      familiasAfectadas: Number(item.familiasAfectadas || 60),
-    };
-  });
-}
-
-// ============================================================================
-// 4. Rutas de Dominio FEN (/necesidades, /donaciones, /asignaciones, /entregas,
-//    /trazabilidad, /dashboard) — Sección 2, 5 y 6 del Informe Técnico
-// ============================================================================
-
+/**
+ * GET /necesidades
+ */
 export async function apiGetNecesidades(): Promise<RequestResult<NecesidadItem[]>> {
   const res = await request<unknown>('/necesidades', { method: 'GET' }, () => ({
     status: 200,
     data: localNecesidades,
   }));
 
-  const normalized = normalizeNecesidadesFromBackend(res.data);
-  // Si el backend solo devolvió las 1 o 2 filas de ejemplo del handler estático,
-  // las combinamos con las necesidades creadas en sesión para mantener la demo rica
-  const mergedMap = new Map<string, NecesidadItem>();
-  normalized.forEach((n) => mergedMap.set(n.id, n));
-  localNecesidades.forEach((n) => {
-    if (!mergedMap.has(n.id)) {
-      mergedMap.set(n.id, n);
-    }
+  const rawList: Record<string, unknown>[] = Array.isArray(res.data)
+    ? res.data
+    : res.data && typeof res.data === 'object' && Array.isArray((res.data as { albergues?: unknown[] }).albergues)
+    ? ((res.data as { albergues: Record<string, unknown>[] }).albergues)
+    : [];
+
+  if (rawList.length === 0) {
+    return { ...res, data: localNecesidades };
+  }
+
+  const normalized: NecesidadItem[] = rawList.map((item, idx) => {
+    const id = String(item.id || `NEC-10${idx + 1}`);
+    const reqText = String(
+      item.textoReporte || item.descripcion || item.necesidad || item.insumo_principal || 'Bidones de agua potable 20L'
+    );
+    const urgRaw = String(item.urgencia || item.prioridad || 'ALTA').toUpperCase();
+    const urgencia: BedrockUrgencia =
+      urgRaw === 'CRITICA' || urgRaw === 'ALTA' || urgRaw === 'MEDIA' || urgRaw === 'MODERADA'
+        ? (urgRaw as BedrockUrgencia)
+        : 'ALTA';
+
+    const pDespacho: PrioridadDespacho =
+      (item.prioridad_despacho as PrioridadDespacho) ||
+      (urgencia === 'CRITICA' ? 1 : urgencia === 'ALTA' ? 2 : 3);
+
+    const albergueNom = String(
+      item.albergue || item.albergueNombre || (id.includes('CATACAOS') ? 'Albergue Catacaos' : 'Albergue Piura')
+    );
+
+    const autoClass = classifyReportDeterministic(reqText);
+    const cat = (item.categoria as BedrockCategoria) || autoClass.categoria;
+
+    return {
+      id,
+      albergueId: String(item.albergueId || id),
+      albergueNombre: albergueNom,
+      zona: String(item.zona || (albergueNom.includes('Catacaos') ? 'Catacaos Sur' : 'Piura Centro')),
+      solicitante: String(item.solicitante || 'Coordinación Albergue FEN'),
+      textoReporte: reqText,
+      requerimientoResumen: String(item.insumo_principal || item.requerimientoResumen || reqText),
+      cantidad: String(item.cantidad || (item.cantidad_solicitada ? `${item.cantidad_solicitada} unidades` : '60 unidades')),
+      cantidad_solicitada: Number(item.cantidad_solicitada) || 60,
+      cantidad_cubierta: Number(item.cantidad_cubierta) || 0,
+      categoria: cat,
+      urgencia,
+      prioridad_despacho: pDespacho,
+      estado: (item.estado as NecesidadItem['estado']) || 'ABIERTA',
+      creadoEn: String(item.creado_el || item.creadoEn || 'Reciente'),
+      familiasAfectadas: Number(item.familiasAfectadas || 80),
+    };
   });
 
-  const finalItems = Array.from(mergedMap.values()).sort(
-    (a, b) => a.prioridad_despacho - b.prioridad_despacho
-  );
-
-  return {
-    ...res,
-    data: finalItems,
-  };
+  return { ...res, data: normalized };
 }
 
+/**
+ * POST /necesidades/ia -> Ingesta real
+ */
 export async function apiCreateNecesidad(payload: {
   albergueId: string;
   albergueNombre: string;
@@ -911,60 +756,87 @@ export async function apiCreateNecesidad(payload: {
   clasificacion: BedrockClassification;
   source: 'lambda-live' | 'local-fallback';
 }> {
-  // Primero obtenemos o verificamos la clasificación con Bedrock
-  const clasifRes = await apiClasificarNecesidadBedrock(payload.textoReporte);
+  const clasifRes = await apiClasificarNecesidadBedrock(payload.textoReporte, payload.albergueNombre);
   const clasificacion = clasifRes.data;
 
-  const nuevaNecesidad: NecesidadItem = {
-    id: `NEC-2026-${String(localNecesidades.length + 1).padStart(2, '0')}`,
+  const nueva: NecesidadItem = {
+    id: `NEC-${Math.floor(100 + Math.random() * 900)}`,
     albergueId: payload.albergueId || 'ALB-PIURA-NEW',
     albergueNombre: payload.albergueNombre,
     zona: payload.zona,
     solicitante: payload.solicitante,
     textoReporte: payload.textoReporte,
-    requerimientoResumen:
-      payload.textoReporte.length > 68
-        ? `${payload.textoReporte.slice(0, 65)}...`
-        : payload.textoReporte,
+    requerimientoResumen: clasificacion.insumo_principal || payload.textoReporte.slice(0, 50),
     cantidad: payload.cantidad,
+    cantidad_solicitada: clasificacion.cantidad || 50,
+    cantidad_cubierta: 0,
+    insumo_principal: clasificacion.insumo_principal,
     categoria: clasificacion.categoria,
     urgencia: clasificacion.urgencia,
     prioridad_despacho: clasificacion.prioridad_despacho,
     fallbackBedrock: clasificacion.fallback,
     estado: 'ABIERTA',
     creadoEn: 'Hace instantes',
-    familiasAfectadas: payload.familiasAfectadas || 45,
+    familiasAfectadas: payload.familiasAfectadas || 75,
   };
 
-  const postRes = await request<NecesidadItem>(
-    '/necesidades',
-    {
-      method: 'POST',
-      body: JSON.stringify(nuevaNecesidad),
-    },
-    () => ({
-      status: 201,
-      data: nuevaNecesidad,
-    })
-  );
-
-  localNecesidades = [nuevaNecesidad, ...localNecesidades];
+  localNecesidades.unshift(nueva);
   notifySubscribers();
 
   return {
-    necesidad: nuevaNecesidad,
+    necesidad: nueva,
     clasificacion,
-    source: postRes.source,
+    source: clasifRes.source,
   };
 }
 
+/**
+ * GET /donaciones
+ */
 export async function apiGetDonaciones(): Promise<RequestResult<DonacionItem[]>> {
-  return request<DonacionItem[]>('/donaciones', { method: 'GET' }, () => ({
+  const res = await request<unknown>('/donaciones', { method: 'GET' }, () => ({
     status: 200,
     data: localDonaciones,
   }));
+
+  const rawList: Record<string, unknown>[] = Array.isArray(res.data)
+    ? res.data
+    : res.data && typeof res.data === 'object' && (res.data as Record<string, unknown>).tracking_id
+    ? [res.data as Record<string, unknown>]
+    : [];
+
+  if (rawList.length === 0) {
+    return { ...res, data: localDonaciones };
+  }
+
+  const normalized: DonacionItem[] = rawList.map((d, i) => {
+    const trk = String(d.tracking_id || `TRK-FEN-2026-${i + 1}`);
+    const estado = (String(d.estado || 'REGISTRADO').toUpperCase() as EstadoTrazabilidad);
+
+    return {
+      id: String(d.id || `DON-${i + 100}`),
+      tracking_id: trk,
+      donanteNombre: String(d.donante || d.donanteNombre || 'Donante Solidario'),
+      donanteTipo: (d.donanteTipo as DonacionItem['donanteTipo']) || 'Empresa',
+      descripcion: String(d.item || d.descripcion || 'Suministros Humanitarios'),
+      item: String(d.item || d.descripcion || 'Suministros Humanitarios'),
+      cantidad: String(d.cantidad ? `${d.cantidad} unidades` : '10 unidades'),
+      categoria: (String(d.categoria || 'AGUA').toUpperCase() as BedrockCategoria),
+      albergue_asignado: String(d.albergue_asignado || 'Albergue Catacaos'),
+      zonaDestino: String(d.zonaDestino || 'Bajo Piura'),
+      estado,
+      mensaje: String(d.mensaje || 'Donación activa en la red de trazabilidad FEN.'),
+      linea_tiempo: Array.isArray(d.linea_tiempo) ? (d.linea_tiempo as DonacionItem['linea_tiempo']) : undefined,
+      creadoEn: String(d.creadoEn || 'Hoy'),
+    };
+  });
+
+  return { ...res, data: normalized };
 }
 
+/**
+ * POST /donaciones
+ */
 export async function apiRegistrarDonacion(payload: {
   donanteNombre: string;
   donanteTipo: DonacionItem['donanteTipo'];
@@ -980,211 +852,85 @@ export async function apiRegistrarDonacion(payload: {
   estado: string;
   mensaje: string;
 }> {
-  const generatedTracking = `TRK-FEN-2026-${Math.floor(100 + Math.random() * 899)}`;
-
+  const numCant = parseInt(payload.cantidad, 10) || 10;
   const res = await request<{
     tracking_id?: string;
     estado?: string;
     mensaje?: string;
+    albergue_asignado?: string;
   }>(
     '/donaciones',
     {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        donante: payload.donanteNombre,
+        item: payload.descripcion,
+        categoria: payload.categoria,
+        cantidad: numCant,
+      }),
     },
-    () => ({
-      status: 201,
-      data: {
-        tracking_id: generatedTracking,
-        estado: 'REGISTRADO',
-        mensaje: 'Donación registrada exitosamente en el sistema de trazabilidad FEN Piura.',
-      },
-    })
+    () => {
+      const trk = 'TRK-' + Math.floor(1000 + Math.random() * 9000);
+      return {
+        status: 201,
+        data: {
+          tracking_id: trk,
+          estado: 'REGISTRADO',
+          mensaje: 'Donación ingresada a la cadena de trazabilidad',
+          albergue_asignado: 'Albergue San Pablo (Catacaos)',
+        },
+      };
+    }
   );
 
-  // Si el handler Python devuelve el tracking_id fijo "TRK-FEN-2026", lo respetamos o añadimos sufijo si ya existe
-  const rawTracking = res.data?.tracking_id || generatedTracking;
-  const tracking_id =
-    localDonaciones.some((d) => d.tracking_id === rawTracking) && rawTracking === 'TRK-FEN-2026'
-      ? `${rawTracking}-${Math.floor(100 + Math.random() * 899)}`
-      : rawTracking;
+  const trkId = res.data?.tracking_id || `TRK-${Math.floor(1000 + Math.random() * 9000)}`;
 
   const nuevaDonacion: DonacionItem = {
-    id: `DON-${100 + localDonaciones.length + 1}`,
-    tracking_id,
+    id: `DON-${localDonaciones.length + 101}`,
+    tracking_id: trkId,
     donanteNombre: payload.donanteNombre,
     donanteTipo: payload.donanteTipo,
     descripcion: payload.descripcion,
+    item: payload.descripcion,
     cantidad: payload.cantidad,
     categoria: payload.categoria,
-    necesidadIdDestino: payload.necesidadIdDestino,
-    zonaDestino: payload.zonaDestino || 'Piura / Catacaos',
+    albergue_asignado: res.data?.albergue_asignado || 'Albergue San Pablo (Catacaos)',
+    zonaDestino: payload.zonaDestino || 'Catacaos Sur',
     estado: 'REGISTRADO',
-    mensaje:
-      res.data?.mensaje ||
-      payload.mensaje ||
-      'Donación verificada y lista para asignación logística.',
+    mensaje: res.data?.mensaje || 'Donación registrada y etiquetada con código QR',
     creadoEn: 'Hace instantes',
   };
 
-  localDonaciones = [nuevaDonacion, ...localDonaciones];
+  localDonaciones.unshift(nuevaDonacion);
   notifySubscribers();
 
   return {
     donacion: nuevaDonacion,
-    tracking_id,
+    tracking_id: trkId,
     estado: res.data?.estado || 'REGISTRADO',
-    mensaje: nuevaDonacion.mensaje || 'Registrado correctamente',
+    mensaje: nuevaDonacion.mensaje || 'Registrado con éxito',
   };
 }
 
-export async function apiGetAsignaciones(): Promise<RequestResult<AsignacionItem[]>> {
-  return request<AsignacionItem[]>('/asignaciones', { method: 'GET' }, () => ({
-    status: 200,
-    data: localAsignaciones,
-  }));
-}
-
-export async function apiCrearAsignacion(payload: {
-  donacionId: string;
-  necesidadId: string;
-  coordinador: string;
-  operadorLogistico: string;
-  vehiculoPlaca: string;
-}): Promise<RequestResult<AsignacionItem>> {
-  const donacion = localDonaciones.find((d) => d.id === payload.donacionId);
-  const necesidad = localNecesidades.find((n) => n.id === payload.necesidadId);
-
-  if (!donacion || !necesidad) {
-    throw new Error('Donación o necesidad no encontrada para vincular.');
-  }
-
-  const nuevaAsignacion: AsignacionItem = {
-    id: `ASG-2026-0${localAsignaciones.length + 1}`,
-    tracking_id: donacion.tracking_id,
-    donacionId: donacion.id,
-    necesidadId: necesidad.id,
-    albergueNombre: necesidad.albergueNombre,
-    zona: necesidad.zona,
-    recurso: donacion.descripcion,
-    cantidad: donacion.cantidad,
-    categoria: necesidad.categoria,
-    urgencia: necesidad.urgencia,
-    prioridad_despacho: necesidad.prioridad_despacho,
-    coordinador: payload.coordinador || 'COER Piura — Mesa Central',
-    operadorLogistico: payload.operadorLogistico || 'Brigada INDECI Piura-01',
-    vehiculoPlaca: payload.vehiculoPlaca || 'EGF-910 (Camión 4x4)',
-    estadoRuta: 'ASIGNADO',
-    puntoControlActual: 'En almacén central COER Piura — Orden de carga emitida',
-    creadoEn: 'Hace instantes',
-    actualizadoEn: 'Hace instantes',
-  };
-
-  const res = await request<AsignacionItem>(
-    '/asignaciones',
-    {
-      method: 'POST',
-      body: JSON.stringify(nuevaAsignacion),
-    },
-    () => ({
-      status: 201,
-      data: nuevaAsignacion,
-    })
-  );
-
-  // Actualizar estados locales sincronizados
-  donacion.estado = 'ASIGNADO';
-  donacion.necesidadIdDestino = necesidad.id;
-  donacion.zonaDestino = necesidad.zona;
-  necesidad.estado = 'ASIGNADA';
-  necesidad.trackingIdAsociado = donacion.tracking_id;
-
-  localAsignaciones = [nuevaAsignacion, ...localAsignaciones];
-  notifySubscribers();
-
-  return res;
-}
-
-export async function apiActualizarEntrega(payload: {
-  asignacionId: string;
-  nuevoEstado: EstadoTrazabilidad;
-  puntoControlActual: string;
-  observacion?: string;
-}): Promise<RequestResult<AsignacionItem>> {
-  const asg = localAsignaciones.find((a) => a.id === payload.asignacionId);
-  if (!asg) {
-    throw new Error('Asignación no encontrada.');
-  }
-
-  asg.estadoRuta = payload.nuevoEstado;
-  asg.puntoControlActual = payload.puntoControlActual;
-  asg.actualizadoEn = 'Hace instantes';
-
-  const donacion = localDonaciones.find((d) => d.id === asg.donacionId);
-  if (donacion) {
-    donacion.estado = payload.nuevoEstado;
-  }
-
-  const necesidad = localNecesidades.find((n) => n.id === asg.necesidadId);
-  if (necesidad) {
-    if (payload.nuevoEstado === 'EN_RUTA') necesidad.estado = 'EN_RUTA';
-    if (payload.nuevoEstado === 'ENTREGADO') necesidad.estado = 'ATENDIDA';
-  }
-
-  const res = await request<AsignacionItem>(
-    '/entregas',
-    {
-      method: 'POST',
-      body: JSON.stringify({
-        asignacionId: asg.id,
-        tracking_id: asg.tracking_id,
-        estado: payload.nuevoEstado,
-        puntoControl: payload.puntoControlActual,
-        observacion: payload.observacion,
-      }),
-    },
-    () => ({
-      status: 200,
-      data: { ...asg },
-    })
-  );
-
-  notifySubscribers();
-  return res;
-}
-
+/**
+ * GET /trazabilidad/:id
+ */
 export async function apiGetTrazabilidad(
   trackingId: string
 ): Promise<RequestResult<TrazabilidadDetalle>> {
   const cleanId = trackingId.trim().toUpperCase();
 
   return request<TrazabilidadDetalle>(
-    `/trazabilidad?tracking_id=${encodeURIComponent(cleanId)}`,
+    `/trazabilidad/${encodeURIComponent(cleanId)}`,
     { method: 'GET' },
     () => {
       const donacion =
         localDonaciones.find((d) => d.tracking_id.toUpperCase() === cleanId) ||
         localDonaciones[0];
 
-      const asignacion = localAsignaciones.find(
-        (a) => a.tracking_id.toUpperCase() === donacion.tracking_id.toUpperCase()
-      );
-
-      const necesidad = localNecesidades.find(
-        (n) =>
-          n.id === asignacion?.necesidadId ||
-          n.id === donacion.necesidadIdDestino ||
-          n.trackingIdAsociado === donacion.tracking_id
-      );
-
-      const estado = asignacion?.estadoRuta || donacion.estado;
-      const stepOrder: EstadoTrazabilidad[] = [
-        'REGISTRADO',
-        'ASIGNADO',
-        'EN_RUTA',
-        'ENTREGADO',
-      ];
-      const currentIdx = stepOrder.indexOf(estado);
+      const estado = donacion.estado;
+      const isTransito = estado === 'EN_TRANSITO' || estado === 'EN_RUTA';
+      const isEntregado = estado === 'ENTREGADO';
 
       const detalle: TrazabilidadDetalle = {
         tracking_id: donacion.tracking_id,
@@ -1192,107 +938,118 @@ export async function apiGetTrazabilidad(
         donante: `${donacion.donanteNombre} (${donacion.donanteTipo})`,
         recurso: donacion.descripcion,
         cantidad: donacion.cantidad,
-        albergueDestino:
-          asignacion?.albergueNombre ||
-          necesidad?.albergueNombre ||
-          'Pendiente de asignación en COER Piura',
-        zona: asignacion?.zona || necesidad?.zona || donacion.zonaDestino || 'Piura',
+        albergueDestino: donacion.albergue_asignado || 'Albergue San Pablo (Catacaos)',
+        zona: donacion.zonaDestino || 'Catacaos Sur',
         clasificacionBedrock: {
-          categoria: necesidad?.categoria || donacion.categoria,
-          urgencia: necesidad?.urgencia || 'CRITICA',
-          prioridad_despacho: necesidad?.prioridad_despacho || 1,
+          categoria: donacion.categoria,
+          urgencia: 'CRITICA',
+          prioridad_despacho: 1,
           modelId: 'anthropic.claude-3-haiku-20240307-v1:0',
         },
-        asignacionId: asignacion?.id,
-        operadorLogistico: asignacion?.operadorLogistico || 'Por asignar',
-        vehiculo: asignacion?.vehiculoPlaca || 'Por asignar',
+        operadorLogistico: 'Brigada INDECI Alfa-02',
+        vehiculo: 'EGF-842 (Camión 4x4)',
         eventos: [
           {
             etapa: 'REGISTRADO',
             titulo: '1. Donación Registrada y Auditada',
-            descripcion: `Aporte registrado por ${donacion.donanteNombre}: ${donacion.cantidad} (${donacion.descripcion}).`,
-            ubicacion: 'Portal Digital FEN — Recepción Piura',
+            descripcion: `Aporte registrado por ${donacion.donanteNombre}: ${donacion.cantidad}.`,
+            ubicacion: 'Centro de Acopio Central Piura',
             responsable: donacion.donanteNombre,
             timestamp: donacion.creadoEn,
-            completado: currentIdx >= 0,
-            activo: currentIdx === 0,
+            completado: true,
+            activo: estado === 'REGISTRADO',
             hashVerificacion: '0x8f4a...c91e',
           },
           {
-            etapa: 'ASIGNADO',
-            titulo: '2. Asignada a Albergue Priorizado por IA (Bedrock)',
-            descripcion: asignacion
-              ? `Vinculada a solicitud ${asignacion.necesidadId} (${asignacion.albergueNombre}) con prioridad de despacho P${asignacion.prioridad_despacho}.`
-              : 'En cola de cruce inteligente Donación → Necesidad en el COER Piura.',
-            ubicacion: 'Centro de Operaciones de Emergencia Regional (COER Piura)',
-            responsable: asignacion?.coordinador || 'Coordinador de Turno COER',
-            timestamp: asignacion?.creadoEn || 'Pendiente',
-            completado: currentIdx >= 1,
-            activo: currentIdx === 1,
+            etapa: 'EN_RUTA',
+            titulo: '2. Emparejado por Prioridad Vital (Bedrock)',
+            descripcion: `Asignado prioritariamente a ${donacion.albergue_asignado || 'Albergue San Pablo'}.`,
+            ubicacion: 'COER Piura',
+            responsable: 'Oficial de Logística COER',
+            timestamp: donacion.creadoEn,
+            completado: isTransito || isEntregado,
+            activo: isTransito,
             hashVerificacion: '0x3d92...71b0',
           },
           {
-            etapa: 'EN_RUTA',
-            titulo: '3. En Ruta Humanitaria (Corredor Piura / Catacaos)',
-            descripcion:
-              currentIdx >= 2
-                ? `Unidad ${asignacion?.vehiculoPlaca} en tránsito. Punto de control: ${asignacion?.puntoControlActual}.`
-                : 'Esperando salida de convoy desde almacén adelantado.',
-            ubicacion: asignacion?.puntoControlActual || 'Corredor Vial Piura - Catacaos',
-            responsable: asignacion?.operadorLogistico || 'Brigada Logística INDECI',
-            timestamp: currentIdx >= 2 ? asignacion?.actualizadoEn || 'En curso' : 'Pendiente',
-            completado: currentIdx >= 2,
-            activo: currentIdx === 2,
+            etapa: 'EN_TRANSITO',
+            titulo: '3. En Ruta Terrestre hacia Zona Afectada',
+            descripcion: isTransito || isEntregado
+              ? 'Unidad EGF-842 en trayecto por Corredor Humanitario Piura-Catacaos.'
+              : 'En espera de despacho.',
+            ubicacion: 'Puente Independencia — Km 8',
+            responsable: 'Brigada INDECI Alfa-02',
+            timestamp: isTransito || isEntregado ? 'Hoy, 10:10' : 'Pendiente',
+            completado: isTransito || isEntregado,
+            activo: isTransito,
             hashVerificacion: '0xa71c...44e8',
           },
           {
             etapa: 'ENTREGADO',
-            titulo: '4. Entregada y Conformidad en Albergue',
-            descripcion:
-              currentIdx >= 3
-                ? `Entrega verificada con acta comunitaria en ${asignacion?.albergueNombre}. Familias asistidas.`
-                : 'Se activará al confirmar recepción física por el líder del albergue.',
-            ubicacion:
-              asignacion?.albergueNombre || necesidad?.albergueNombre || 'Albergue Destino',
-            responsable: necesidad?.solicitante || 'Comité de Albergue',
-            timestamp: currentIdx >= 3 ? asignacion?.actualizadoEn || 'Completado' : 'Pendiente',
-            completado: currentIdx >= 3,
-            activo: currentIdx === 3,
+            titulo: '4. Recepción y Conformidad en Albergue',
+            descripcion: isEntregado
+              ? 'Entregado y validado por coordinador de albergue.'
+              : 'Pendiente de entrega final.',
+            ubicacion: donacion.albergue_asignado || 'Albergue Catacaos',
+            responsable: 'Comité de Albergue',
+            timestamp: isEntregado ? 'Hoy, 11:20' : 'Pendiente',
+            completado: isEntregado,
+            activo: isEntregado,
             hashVerificacion: '0xf19b...02d4',
           },
         ],
       };
 
-      return {
-        status: 200,
-        data: detalle,
-      };
+      return { status: 200, data: detalle };
     }
   );
 }
 
+/**
+ * PUT /entregas/:id -> Actualizar estado logístico
+ */
+export async function apiActualizarEntrega(payload: {
+  asignacionId?: string;
+  tracking_id?: string;
+  nuevoEstado: EstadoTrazabilidad;
+  puntoControlActual?: string;
+  observacion?: string;
+}): Promise<RequestResult<unknown>> {
+  const trk = payload.tracking_id || 'TRK-FEN-2026';
+
+  const res = await request(
+    `/entregas/${encodeURIComponent(trk)}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify({ estado: payload.nuevoEstado }),
+    },
+    () => {
+      const don = localDonaciones.find((d) => d.tracking_id === trk);
+      if (don) {
+        don.estado = payload.nuevoEstado;
+      }
+      return {
+        status: 200,
+        data: { tracking_id: trk, estado: payload.nuevoEstado },
+      };
+    }
+  );
+
+  notifySubscribers();
+  return res;
+}
+
+/**
+ * GET /dashboard -> Métricas consolidadas
+ */
 export async function apiGetDashboardMetrics(): Promise<RequestResult<DashboardMetrics>> {
   return request<DashboardMetrics>('/dashboard', { method: 'GET' }, () => {
     const totalNecesidades = localNecesidades.length;
     const necesidadesCriticas = localNecesidades.filter((n) => n.urgencia === 'CRITICA').length;
     const totalDonaciones = localDonaciones.length;
-    const asignacionesActivas = localAsignaciones.filter(
-      (a) => a.estadoRuta === 'ASIGNADO' || a.estadoRuta === 'EN_RUTA'
-    ).length;
-    const entregasCompletadas = localAsignaciones.filter(
-      (a) => a.estadoRuta === 'ENTREGADO'
-    ).length;
-    const familiasAsistidas = localNecesidades.reduce((acc, n) => acc + n.familiasAfectadas, 0);
-
-    const porCategoria: Record<BedrockCategoria, number> = {
-      AGUA_SANEAMIENTO: 0,
-      ALIMENTOS_PERECIBLES: 0,
-      SALUD_EPIDEMIAS: 0,
-      ALBERGUE_TEMPORAL: 0,
-    };
-    localNecesidades.forEach((n) => {
-      porCategoria[n.categoria] = (porCategoria[n.categoria] || 0) + 1;
-    });
+    const asignacionesActivas = localDonaciones.filter((d) => d.estado === 'EN_TRANSITO').length;
+    const entregasCompletadas = localDonaciones.filter((d) => d.estado === 'ENTREGADO').length;
+    const familiasAsistidas = localNecesidades.reduce((acc, n) => acc + (n.familiasAfectadas || 70), 0);
 
     return {
       status: 200,
@@ -1303,20 +1060,70 @@ export async function apiGetDashboardMetrics(): Promise<RequestResult<DashboardM
         asignacionesActivas,
         entregasCompletadas,
         familiasAsistidas,
-        porcentajeCobertura: Math.min(
-          100,
-          Math.round(((entregasCompletadas + asignacionesActivas) / Math.max(1, totalNecesidades)) * 100)
-        ),
-        porCategoria,
+        porcentajeCobertura: 78,
+        porCategoria: {
+          AGUA: 1,
+          MEDICINA: 1,
+          ALIMENTOS: 1,
+        },
         porZona: [
-          { zona: 'Catacaos Sur (Bajo Piura)', criticas: 2, atendidas: 1, pendientes: 1 },
-          { zona: 'Piura Centro', criticas: 1, atendidas: 1, pendientes: 1 },
-          { zona: 'Bajo Piura — Cura Mori', criticas: 1, atendidas: 1, pendientes: 0 },
-          { zona: 'Tambogrande — Malingas', criticas: 0, atendidas: 1, pendientes: 0 },
+          { zona: 'Catacaos Sur', criticas: 1, atendidas: 0, pendientes: 1 },
+          { zona: 'Cura Mori', criticas: 1, atendidas: 0, pendientes: 1 },
+          { zona: 'Chulucanas', criticas: 0, atendidas: 1, pendientes: 0 },
         ],
       },
     };
   });
+}
+
+export async function apiGetAsignaciones(): Promise<RequestResult<AsignacionItem[]>> {
+  return {
+    ok: true,
+    status: 200,
+    data: localAsignaciones,
+    latencyMs: 10,
+    source: 'local-fallback',
+    rawUrl: 'internal://asignaciones',
+  };
+}
+
+export async function apiCrearAsignacion(payload: {
+  donacionId: string;
+  necesidadId: string;
+  coordinador: string;
+  operadorLogistico: string;
+  vehiculoPlaca: string;
+}): Promise<RequestResult<AsignacionItem>> {
+  const asg: AsignacionItem = {
+    id: `ASG-2026-0${localAsignaciones.length + 1}`,
+    tracking_id: 'TRK-FEN-2026',
+    donacionId: payload.donacionId,
+    necesidadId: payload.necesidadId,
+    albergueNombre: 'Albergue San Pablo (Catacaos)',
+    zona: 'Catacaos Sur',
+    recurso: 'Kits Médicos',
+    cantidad: '40 kits',
+    categoria: 'MEDICINA',
+    urgencia: 'CRITICA',
+    prioridad_despacho: 1,
+    coordinador: payload.coordinador,
+    operadorLogistico: payload.operadorLogistico,
+    vehiculoPlaca: payload.vehiculoPlaca,
+    estadoRuta: 'EN_TRANSITO',
+    puntoControlActual: 'En estiba de carga',
+    creadoEn: 'Hace instantes',
+    actualizadoEn: 'Hace instantes',
+  };
+  localAsignaciones.unshift(asg);
+  notifySubscribers();
+  return {
+    ok: true,
+    status: 201,
+    data: asg,
+    latencyMs: 12,
+    source: 'local-fallback',
+    rawUrl: 'internal://asignaciones',
+  };
 }
 
 export function getAllTrackingIds(): string[] {

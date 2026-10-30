@@ -12,6 +12,7 @@ import {
   HeartPulse,
   Home,
   Package,
+  Shield,
   Truck,
   Zap,
 } from 'lucide-react';
@@ -21,20 +22,40 @@ export const CategoriaBadge: React.FC<{ categoria: BedrockCategoria }> = ({ cate
     BedrockCategoria,
     { label: string; color: string; icon: React.ReactNode }
   > = {
+    AGUA: {
+      label: 'AGUA',
+      color: 'bg-[#80f4ff]/10 text-[#80f4ff] border-[#80f4ff]/30',
+      icon: <Droplets className="w-3.5 h-3.5" />,
+    },
     AGUA_SANEAMIENTO: {
       label: 'AGUA_SANEAMIENTO',
       color: 'bg-[#80f4ff]/10 text-[#80f4ff] border-[#80f4ff]/30',
       icon: <Droplets className="w-3.5 h-3.5" />,
+    },
+    ALIMENTOS: {
+      label: 'ALIMENTOS',
+      color: 'bg-[#ffcf99]/10 text-[#ffcf99] border-[#ffcf99]/30',
+      icon: <Package className="w-3.5 h-3.5" />,
     },
     ALIMENTOS_PERECIBLES: {
       label: 'ALIMENTOS_PERECIBLES',
       color: 'bg-[#ffcf99]/10 text-[#ffcf99] border-[#ffcf99]/30',
       icon: <Package className="w-3.5 h-3.5" />,
     },
+    MEDICINA: {
+      label: 'MEDICINA',
+      color: 'bg-[#ff80b5]/10 text-[#ff80b5] border-[#ff80b5]/30',
+      icon: <HeartPulse className="w-3.5 h-3.5" />,
+    },
     SALUD_EPIDEMIAS: {
       label: 'SALUD_EPIDEMIAS',
       color: 'bg-[#ff80b5]/10 text-[#ff80b5] border-[#ff80b5]/30',
       icon: <HeartPulse className="w-3.5 h-3.5" />,
+    },
+    ABRIGO: {
+      label: 'ABRIGO',
+      color: 'bg-[#b080ff]/12 text-[#d4b8ff] border-[#b080ff]/35',
+      icon: <Shield className="w-3.5 h-3.5" />,
     },
     ALBERGUE_TEMPORAL: {
       label: 'ALBERGUE_TEMPORAL',
@@ -43,7 +64,7 @@ export const CategoriaBadge: React.FC<{ categoria: BedrockCategoria }> = ({ cate
     },
   };
 
-  const item = map[categoria] || map.AGUA_SANEAMIENTO;
+  const item = map[categoria] || map.AGUA;
 
   return (
     <span
@@ -61,7 +82,9 @@ export const UrgenciaBadge: React.FC<{ urgencia: BedrockUrgencia }> = ({ urgenci
     CRITICA:
       'bg-[#ff3366]/20 text-[#ff8ba7] border-[#ff3366]/60 shadow-[0_0_16px_rgba(255,51,102,0.35)]',
     ALTA: 'bg-[#ff9900]/20 text-[#ffd180] border-[#ff9900]/50 shadow-[0_0_12px_rgba(255,153,0,0.2)]',
+    MEDIA: 'bg-[#00c8ff]/15 text-[#80e5ff] border-[#00c8ff]/40',
     MODERADA: 'bg-[#00c8ff]/15 text-[#80e5ff] border-[#00c8ff]/40',
+    BAJA: 'bg-white/10 text-[#a59bb8] border-white/20',
   };
 
   return (
@@ -85,9 +108,9 @@ export const UrgenciaBadge: React.FC<{ urgencia: BedrockUrgencia }> = ({ urgenci
 
 export const PrioridadBadge: React.FC<{ prioridad: PrioridadDespacho }> = ({ prioridad }) => {
   const colors: Record<PrioridadDespacho, string> = {
-    1: 'bg-gradient-to-r from-[#8847ff]/30 to-[#b080ff]/20 text-[#f3e8ff] border-[#b080ff]/60 shadow-[0_0_12px_rgba(136,71,255,0.3)]',
-    2: 'bg-[#292238] text-[#d8b4fe] border-[#b080ff]/30',
-    3: 'bg-[#1c1826] text-[#a59bb8] border-white/10',
+    1: 'bg-[#8847ff]/25 text-[#e2d3fe] border-[#b080ff]/50 shadow-[0_0_14px_rgba(136,71,255,0.25)]',
+    2: 'bg-[#2a2338] text-[#c4b5fd] border-[#b080ff]/25',
+    3: 'bg-[#1f1a29] text-[#9ca3af] border-white/10',
   };
 
   return (
@@ -96,9 +119,8 @@ export const PrioridadBadge: React.FC<{ prioridad: PrioridadDespacho }> = ({ pri
         colors[prioridad] || colors[2]
       }`}
     >
-      <Zap className="w-3.5 h-3.5 text-[#b080ff] shrink-0" />
-      <span>P{prioridad}</span>
-      <span className="text-[10px] opacity-75 font-normal">(prioridad_despacho: {prioridad})</span>
+      <Zap className="w-3.5 h-3.5 text-[#b080ff]" />
+      P{prioridad} (prioridad_despacho: {prioridad})
     </span>
   );
 };
@@ -106,41 +128,48 @@ export const PrioridadBadge: React.FC<{ prioridad: PrioridadDespacho }> = ({ pri
 export const EstadoTrazabilidadBadge: React.FC<{ estado: EstadoTrazabilidad | string }> = ({
   estado,
 }) => {
-  const map: Record<string, { text: string; cls: string; icon: React.ReactNode; isLive?: boolean }> = {
+  const map: Record<string, { text: string; cls: string; icon: React.ReactNode; pulse?: boolean }> = {
     REGISTRADO: {
       text: 'REGISTRADO',
-      cls: 'bg-[#b080ff]/15 text-[#e2d3fe] border-[#b080ff]/40',
+      cls: 'bg-[#b080ff]/15 text-[#e2d3fe] border-[#b080ff]/35',
       icon: <Package className="w-3.5 h-3.5" />,
     },
     ABIERTA: {
       text: 'ABIERTA',
-      cls: 'bg-[#ff80b5]/15 text-[#ff80b5] border-[#ff80b5]/40',
+      cls: 'bg-[#ff3366]/15 text-[#ff8ba7] border-[#ff3366]/40 shadow-[0_0_10px_rgba(255,51,102,0.2)]',
       icon: <AlertTriangle className="w-3.5 h-3.5" />,
+      pulse: true,
     },
     ASIGNADO: {
       text: 'ASIGNADO',
-      cls: 'bg-[#ffcf99]/20 text-[#ffd9a3] border-[#ffcf99]/40',
+      cls: 'bg-[#ff9900]/15 text-[#ffd180] border-[#ff9900]/35',
       icon: <Zap className="w-3.5 h-3.5" />,
     },
     ASIGNADA: {
       text: 'ASIGNADA',
-      cls: 'bg-[#ffcf99]/20 text-[#ffd9a3] border-[#ffcf99]/40',
+      cls: 'bg-[#ff9900]/15 text-[#ffd180] border-[#ff9900]/35',
       icon: <Zap className="w-3.5 h-3.5" />,
+    },
+    EN_TRANSITO: {
+      text: 'EN TRÁNSITO',
+      cls: 'bg-[#00c8ff]/15 text-[#80e5ff] border-[#00c8ff]/40 shadow-[0_0_12px_rgba(0,200,255,0.2)]',
+      icon: <Truck className="w-3.5 h-3.5" />,
+      pulse: true,
     },
     EN_RUTA: {
       text: 'EN RUTA',
-      cls: 'bg-[#80f4ff]/20 text-[#80f4ff] border-[#80f4ff]/50 shadow-[0_0_14px_rgba(128,244,255,0.25)]',
-      icon: <Truck className="w-3.5 h-3.5 animate-pulse" />,
-      isLive: true,
+      cls: 'bg-[#00c8ff]/15 text-[#80e5ff] border-[#00c8ff]/40 shadow-[0_0_12px_rgba(0,200,255,0.2)]',
+      icon: <Truck className="w-3.5 h-3.5" />,
+      pulse: true,
     },
     ENTREGADO: {
       text: 'ENTREGADO',
-      cls: 'bg-[#80ffb5]/20 text-[#80ffb5] border-[#80ffb5]/50 shadow-[0_0_14px_rgba(128,255,181,0.2)]',
+      cls: 'bg-[#00ff99]/15 text-[#80ffcc] border-[#00ff99]/40 shadow-[0_0_12px_rgba(0,255,153,0.2)]',
       icon: <CheckCircle2 className="w-3.5 h-3.5" />,
     },
     ATENDIDA: {
       text: 'ATENDIDA',
-      cls: 'bg-[#80ffb5]/20 text-[#80ffb5] border-[#80ffb5]/50 shadow-[0_0_14px_rgba(128,255,181,0.2)]',
+      cls: 'bg-[#00ff99]/15 text-[#80ffcc] border-[#00ff99]/40 shadow-[0_0_12px_rgba(0,255,153,0.2)]',
       icon: <CheckCircle2 className="w-3.5 h-3.5" />,
     },
   };
@@ -149,13 +178,10 @@ export const EstadoTrazabilidadBadge: React.FC<{ estado: EstadoTrazabilidad | st
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold border tracking-wide ${cfg.cls}`}
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold border ${cfg.cls}`}
     >
-      {cfg.isLive && (
-        <span className="relative flex h-2 w-2 mr-0.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#80f4ff] opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-[#80f4ff]"></span>
-        </span>
+      {cfg.pulse && (
+        <span className="w-1.5 h-1.5 rounded-full bg-current animate-ping" />
       )}
       {cfg.icon}
       {cfg.text}

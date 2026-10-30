@@ -42,7 +42,7 @@ export const CoordinadorView: React.FC<CoordinadorViewProps> = ({
   );
 
   const donacionesDisponibles = donaciones.filter(
-    (d) => d.estado === 'REGISTRADO' || d.estado === 'ASIGNADO'
+    (d) => d.estado === 'REGISTRADO' || (d.estado as string) === 'ASIGNADO'
   );
 
   const [selectedNecId, setSelectedNecId] = useState<string>(

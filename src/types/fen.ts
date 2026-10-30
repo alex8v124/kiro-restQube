@@ -12,14 +12,18 @@ export type RoleId =
 
 export type ApiConnectionMode = 'hybrid' | 'live' | 'mock';
 
-// Categorías y Urgencias oficiales del contrato Amazon Bedrock (Manual Sección 5 / Informe 4.5)
+// Categorías del contrato FEN (Manual de Ingeniería Full-Stack + Bedrock)
 export type BedrockCategoria =
+  | 'AGUA'
+  | 'ALIMENTOS'
+  | 'MEDICINA'
+  | 'ABRIGO'
   | 'AGUA_SANEAMIENTO'
   | 'ALIMENTOS_PERECIBLES'
   | 'SALUD_EPIDEMIAS'
   | 'ALBERGUE_TEMPORAL';
 
-export type BedrockUrgencia = 'CRITICA' | 'ALTA' | 'MODERADA';
+export type BedrockUrgencia = 'CRITICA' | 'ALTA' | 'MEDIA' | 'MODERADA' | 'BAJA';
 
 export type PrioridadDespacho = 1 | 2 | 3;
 
@@ -27,25 +31,30 @@ export interface BedrockClassification {
   categoria: BedrockCategoria;
   urgencia: BedrockUrgencia;
   prioridad_despacho: PrioridadDespacho;
+  cantidad?: number;
+  insumo_principal?: string;
   fallback?: boolean;
   modelId?: string;
   justificacion?: string;
   latencyMs?: number;
 }
 
-// Estado del flujo de trazabilidad (Sección 6 del Informe Técnico)
-export type EstadoTrazabilidad = 'REGISTRADO' | 'ASIGNADO' | 'EN_RUTA' | 'ENTREGADO';
+// Estados canónicos de trazabilidad logística
+export type EstadoTrazabilidad = 'REGISTRADO' | 'EN_TRANSITO' | 'EN_RUTA' | 'ENTREGADO';
 
-// Modelo normalizado de Necesidad (unifica Handler JS, Handler Python y Bedrock)
+// Requerimiento de Albergue (unifica backend oficial y vistas de React)
 export interface NecesidadItem {
   id: string;
   albergueId: string;
   albergueNombre: string;
-  zona: string; // Ej: "Piura Centro", "Catacaos Sur", "Bajo Piura - Cura Mori"
+  zona: string;
   solicitante: string;
   textoReporte: string;
   requerimientoResumen: string;
   cantidad: string;
+  cantidad_solicitada?: number;
+  cantidad_cubierta?: number;
+  insumo_principal?: string;
   categoria: BedrockCategoria;
   urgencia: BedrockUrgencia;
   prioridad_despacho: PrioridadDespacho;
@@ -58,16 +67,23 @@ export interface NecesidadItem {
 
 export interface DonacionItem {
   id: string;
-  tracking_id: string; // Ej: "TRK-FEN-2026" o "TRK-FEN-2026-841"
+  tracking_id: string; // Ej: "TRK-FEN-2026", "TRK-4912"
   donanteNombre: string;
   donanteTipo: 'Empresa' | 'ONG' | 'Ciudadano' | 'Cooperación Internacional';
   descripcion: string;
+  item?: string;
   cantidad: string;
   categoria: BedrockCategoria;
   necesidadIdDestino?: string;
+  albergue_asignado?: string;
   zonaDestino?: string;
   estado: EstadoTrazabilidad;
   mensaje?: string;
+  linea_tiempo?: Array<{
+    paso: string;
+    timestamp: string | null;
+    completado: boolean;
+  }>;
   creadoEn: string;
 }
 
@@ -127,12 +143,12 @@ export interface DashboardMetrics {
   entregasCompletadas: number;
   familiasAsistidas: number;
   porcentajeCobertura: number;
-  porCategoria: Record<BedrockCategoria, number>;
+  porCategoria: Record<string, number>;
   porZona: Array<{ zona: string; criticas: number; atendidas: number; pendientes: number }>;
 }
 
 // ============================================================================
-// Contratos Oficiales del Verificador Automático (150 Puntos - Sección 4)
+// Contratos Oficiales del Verificador Automático (150 Puntos)
 // ============================================================================
 
 export interface HealthResponse {
