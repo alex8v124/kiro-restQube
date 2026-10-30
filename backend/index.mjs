@@ -1,7 +1,15 @@
-import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+let BedrockRuntimeClient = null;
+let InvokeModelCommand = null;
+let bedrock = null;
 
-// Cliente nativo de Amazon Bedrock Runtime (us-east-1)
-const bedrock = new BedrockRuntimeClient({ region: "us-east-1" });
+try {
+  const mod = await import("@aws-sdk/client-bedrock-runtime");
+  BedrockRuntimeClient = mod.BedrockRuntimeClient;
+  InvokeModelCommand = mod.InvokeModelCommand;
+  bedrock = new BedrockRuntimeClient({ region: "us-east-1" });
+} catch {
+  // Si no está en node_modules, se usará el clasificador determinista FEN sin romper la Lambda
+}
 
 // Identificador oficial del equipo registrado en el portal
 const TEAM_ID = process.env.TEAM_ID || "NexusLabs";
@@ -94,13 +102,18 @@ export const handler = async (event) => {
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Origin",
+    "Access-Control-Max-Age": "86400",
   };
 
   // Respuesta inmediata a pre-vuelo CORS OPTIONS
   if (method === "OPTIONS") {
-    return { statusCode: 200, headers, body: "" };
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ ok: true, message: "CORS preflight OK" }),
+    };
   }
 
   // Parseo resiliente del cuerpo JSON
