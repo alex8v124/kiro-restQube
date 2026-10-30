@@ -1,0 +1,55 @@
+image: node:22-alpine
+
+stages:
+  - audit_kiro
+  - build
+  - deploy
+
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - node_modules/
+
+# 1. Auditoría estática automática para la insignia Maestría Kiro (+30 Pts)
+kiro_specs_audit:
+  stage: audit_kiro
+  script:
+    - echo "Verificando umbrales de caracteres en .kiro/ (wc -m)..."
+    - test $(wc -m < .kiro/specs/ayuda-trazable/requirements.md) -ge 300
+    - test $(wc -m < .kiro/specs/ayuda-trazable/design.md) -ge 300
+    - test $(wc -m < .kiro/specs/ayuda-trazable/tasks.md) -ge 300
+    - test $(wc -m < .kiro/steering/fen-rules.md) -ge 200
+    - grep -q '"when"' .kiro/hooks/auto-audit.json
+    - grep -q '"then"' .kiro/hooks/auto-audit.json
+    - echo "Auditoría Maestría Kiro (+30 pts) superada exitosamente."
+
+# 2. Compilación de producción (Vite + TypeScript)
+build_frontend:
+  stage: build
+  variables:
+    VITE_API_URL: ${VITE_API_URL}
+    VITE_TEAM_ID: ${VITE_TEAM_ID}
+  script:
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+
+# 3. Despliegue automático en GitLab Pages
+pages:
+  stage: deploy
+  dependencies:
+    - build_frontend
+  script:
+    - rm -rf public
+    - cp -r dist public
+    - cp public/index.html public/404.html
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
