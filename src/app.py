@@ -1,5 +1,6 @@
 import base64
 import json
+import logging
 import os
 import re
 import time
@@ -9,8 +10,13 @@ from typing import Any, Dict, List, Optional
 
 try:
     import boto3
+    from botocore.exceptions import BotoCoreError, ClientError
 except ImportError:
     boto3 = None  # type: ignore
+    BotoCoreError = ClientError = Exception  # type: ignore
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 # ============================================================================
 # Configuración e Inicialización de Tabla DynamoDB (TABLE / TABLE_NAME)
@@ -49,7 +55,7 @@ def _init_table() -> Any:
             dynamodb = boto3.resource("dynamodb", region_name=AWS_REGION)
             return dynamodb.Table(TABLE_NAME)
         except Exception:
-            pass
+            logger.exception("No se pudo inicializar la tabla DynamoDB %s; se usa memoria", TABLE_NAME)
     return _InMemoryFallbackTable()
 
 
@@ -133,6 +139,9 @@ DONACIONES_DB: Dict[str, Dict[str, Any]] = {
 }
 
 
+ASIGNACIONES_DB: List[Dict[str, Any]] = []
+
+
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -143,7 +152,7 @@ def _table_put(item: Dict[str, Any]) -> None:
         try:
             TABLE.put_item(Item=item)
         except Exception:
-            pass
+            logger.exception("DynamoDB put_item falló para id=%s", item.get("id"))
 
 
 def _table_get(item_id: str) -> Optional[Dict[str, Any]]:
@@ -153,7 +162,7 @@ def _table_get(item_id: str) -> Optional[Dict[str, Any]]:
             if resp and "Item" in resp:
                 return resp["Item"]
         except Exception:
-            pass
+            logger.exception("DynamoDB get_item falló para id=%s", item_id)
     return _MEM_BACKUP.get_item(Key={"id": item_id}).get("Item")
 
 
@@ -183,7 +192,7 @@ def _table_scan_items(max_items: int = 100) -> List[Dict[str, Any]]:
                     break
                 scan_kwargs["ExclusiveStartKey"] = last_key
         except Exception:
-            pass
+            logger.exception("DynamoDB scan falló; se usa respaldo en memoria")
 
     if not raw_records:
         for r in _MEM_BACKUP.scan().get("Items", []):
@@ -271,8 +280,19 @@ def clasificar_necesidad_humanitaria(texto_reporte: str) -> Dict[str, Any]:
                     "insumo_principal": parsed.get("insumo_principal", fb_insumo),
                     "fallback": False,
                 }
-        except Exception:
-            pass
+            logger.warning("Bedrock respondió sin JSON reconocible; se usa fallback. Respuesta: %.200s", text_out)
+        except ClientError as exc:
+            # ThrottlingException, AccessDeniedException, ValidationException, ModelTimeoutException...
+            error = exc.response.get("Error", {})
+            logger.warning(
+                "Bedrock ClientError %s: %s; se usa fallback determinista",
+                error.get("Code", "Desconocido"),
+                error.get("Message", ""),
+            )
+        except BotoCoreError as exc:
+            logger.warning("Bedrock BotoCoreError %s: %s; se usa fallback determinista", type(exc).__name__, exc)
+        except (json.JSONDecodeError, ValueError, TypeError, KeyError) as exc:
+            logger.warning("Respuesta de Bedrock inválida (%s: %s); se usa fallback determinista", type(exc).__name__, exc)
 
     return {
         "categoria": fb_cat,
@@ -555,6 +575,50 @@ def lambda_handler(event: Dict[str, Any], context: Any = None) -> Dict[str, Any]
         DONACIONES_DB[tracking_id] = donacion
         return _response(201, donacion, headers)
 
+    if path == "/asignaciones" and method == "GET":
+        return _response(200, ASIGNACIONES_DB, headers)
+
+    if path == "/asignaciones" and method == "POST":
+        trk_id = str(body.get("tracking_id") or "")
+        don = DONACIONES_DB.get(trk_id)
+        if don is None and body.get("donacionId"):
+            don = next((d for d in DONACIONES_DB.values() if d.get("id") == body.get("donacionId")), None)
+        if don is None:
+            return _response(404, {"error": "Donación no existe", "tracking_id": trk_id or None}, headers)
+
+        nec_id = body.get("necesidadId") or don.get("necesidad_id")
+        nec = next((n for n in NECESIDADES_DB if n.get("id") == nec_id), None)
+        if nec is None:
+            return _response(404, {"error": "Necesidad no existe", "necesidadId": nec_id}, headers)
+
+        don["estado"] = "ASIGNADO"
+        don["necesidad_id"] = nec["id"]
+        don["albergue_asignado"] = nec.get("albergue")
+        nec["estado"] = "ASIGNADA"
+        ahora = _now_iso()
+        asignacion = {
+            "id": f"ASG-{len(ASIGNACIONES_DB) + 1:03d}",
+            "tracking_id": don["tracking_id"],
+            "donacionId": don["id"],
+            "necesidadId": nec["id"],
+            "albergueNombre": nec.get("albergue"),
+            "zona": nec.get("zona"),
+            "recurso": don.get("item"),
+            "cantidad": str(don.get("cantidad")),
+            "categoria": nec.get("categoria"),
+            "urgencia": nec.get("urgencia"),
+            "prioridad_despacho": nec.get("prioridad_despacho"),
+            "coordinador": body.get("coordinador") or "Coordinador COER",
+            "operadorLogistico": body.get("operadorLogistico") or "Operador logístico",
+            "vehiculoPlaca": body.get("vehiculoPlaca") or "Por asignar",
+            "estadoRuta": "ASIGNADO",
+            "puntoControlActual": "Centro de acopio",
+            "creadoEn": ahora,
+            "actualizadoEn": ahora,
+        }
+        ASIGNACIONES_DB.insert(0, asignacion)
+        return _response(201, asignacion, headers)
+
     if path.startswith("/trazabilidad/") and method == "GET":
         trk_id = path.split("/")[-1]
         if trk_id in DONACIONES_DB:
@@ -577,6 +641,11 @@ def lambda_handler(event: Dict[str, Any], context: Any = None) -> Dict[str, Any]
                 don["linea_tiempo"][2]["timestamp"] = _now_iso()
             don["linea_tiempo"][3]["completado"] = True
             don["linea_tiempo"][3]["timestamp"] = _now_iso()
+        for asg in ASIGNACIONES_DB:
+            if asg["tracking_id"] == trk_id:
+                asg["estadoRuta"] = nuevo_estado
+                asg["puntoControlActual"] = body.get("puntoControlActual") or asg["puntoControlActual"]
+                asg["actualizadoEn"] = _now_iso()
         return _response(200, don, headers)
 
     if path == "/dashboard" and method == "GET":

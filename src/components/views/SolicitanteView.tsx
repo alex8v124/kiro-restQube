@@ -39,7 +39,7 @@ const PRESET_REPORTES = [
     albergueId: 'ALB-PIURA-01',
     albergueNombre: 'Albergue Coliseo Seminario y Jaime — Piura Centro',
     zona: 'Piura Centro',
-    solicitante: 'Carlos Merino (Líder de Albergue)',
+    solicitante: 'Líder de Albergue (simulado)',
     cantidad: '100 bidones de 20L (2,000 litros)',
     familias: 120,
     texto:
@@ -50,7 +50,7 @@ const PRESET_REPORTES = [
     albergueId: 'ALB-CATACAOS-02',
     albergueNombre: 'Albergue I.E. Juan de Mori — Catacaos',
     zona: 'Catacaos Sur (Bajo Piura)',
-    solicitante: 'Rosa Ipanaqué (Enfermera Comunitaria)',
+    solicitante: 'Enfermera Comunitaria (simulado)',
     cantidad: '40 kits médicos + 80 mosquiteros',
     familias: 85,
     texto:
@@ -90,7 +90,7 @@ export const SolicitanteView: React.FC<SolicitanteViewProps> = ({
     'Albergue I.E. San Miguel — Piura'
   );
   const [zona, setZona] = useState('Piura Centro');
-  const [solicitante, setSolicitante] = useState('María Bancayán (Coordinadora de Albergue)');
+  const [solicitante, setSolicitante] = useState('Coordinadora de Albergue (simulado)');
   const [cantidad, setCantidad] = useState('80 bidones de agua 20L + kits de cloro');
   const [familias, setFamilias] = useState(90);
   const [textoReporte, setTextoReporte] = useState(

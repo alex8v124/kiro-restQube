@@ -11,7 +11,7 @@ Plataforma serverless de coordinación humanitaria ante el Fenómeno El Niño. C
 | Capa | Tecnología |
 |---|---|
 | **Frontend** | React 18 + TypeScript + Vite + Tailwind CSS 4 (6 vistas por rol) |
-| **Backend** | AWS Lambda — `backend/index.mjs` (Node.js ESM, handler único) |
+| **Backend** | AWS Lambda — `src/app.py` (Python 3.12, handler `src.app.lambda_handler`, desplegado por `template.yaml`) |
 | **Base de datos** | Amazon DynamoDB (tablas por dominio, PAY_PER_REQUEST) |
 | **IA** | Amazon Bedrock Runtime — `anthropic.claude-3-haiku-20240307-v1:0` |
 | **Infraestructura** | AWS SAM / API Gateway HTTP + Lambda Function URL |
@@ -33,6 +33,10 @@ npm run dev
 # 4. Build de producción
 npm run build
 npm run preview
+
+# 5. Pruebas del backend
+python3 -m venv .venv && .venv/bin/pip install pytest -r requirements.txt
+.venv/bin/python -m pytest -q tests
 ```
 
 ## Despliegue del backend
@@ -73,8 +77,8 @@ sam deploy --guided
 | `/necesidades/ia` | POST | Clasificación GenAI con Bedrock |
 | `/donaciones` | GET / POST | Donaciones y emisión de `tracking_id` |
 | `/asignaciones` | GET / POST | Cruce Donación → Necesidad |
-| `/entregas` | POST | Avance de estado logístico |
-| `/trazabilidad` | GET | Detalle público por `tracking_id` |
+| `/entregas/{tracking_id}` | PUT / POST | Avance de estado logístico (`EN_RUTA`, `ENTREGADO`) |
+| `/trazabilidad/{tracking_id}` | GET | Detalle público por `tracking_id` (404 si no existe) |
 | `/dashboard` | GET | Métricas de impacto |
 
 ## Clasificación Bedrock
@@ -83,7 +87,7 @@ sam deploy --guided
 - **Categorías:** `AGUA_SANEAMIENTO` · `ALIMENTOS_PERECIBLES` · `SALUD_EPIDEMIAS` · `ALBERGUE_TEMPORAL`
 - **Urgencias:** `CRITICA` · `ALTA` · `MODERADA`
 - **Prioridades:** `1` (mayor) · `2` · `3`
-- **Fallback determinista** siempre disponible (marca `fallback: true` ante throttling o latencia).
+- **Fallback determinista** siempre disponible (marca `fallback: true` ante throttling o latencia). Cada fallback queda registrado en CloudWatch Logs con el código de error de Bedrock (`ThrottlingException`, `AccessDeniedException`, etc.) o el motivo del parseo fallido.
 
 ## Despliegue del frontend
 
@@ -108,6 +112,12 @@ Ver [`.kiro/steering/project.md`](.kiro/steering/project.md) y `.kiro/steering/f
 ## Spec
 
 Ver `.kiro/specs/ayuda-trazable/` — `requirements.md`, `design.md`, `tasks.md`.
+
+## Control de acceso (alcance de la demo)
+
+Las 6 vistas por rol son un **selector de perspectiva para la demo**, no un mecanismo de autorización: el frontend no autentica usuarios y la Lambda se expone con `FunctionUrlConfig.AuthType: NONE`, por lo que cualquier visitante puede abrir cualquier vista y llamar a cualquier endpoint. Es aceptable aquí porque todos los datos son simulados y no hay información personal.
+
+Para producción, el siguiente paso es Amazon Cognito (User Pool con grupos `solicitante`, `donante`, `coordinador`, `logistico`, `administrador`) y un JWT authorizer en el HTTP API que valide el grupo por ruta (por ejemplo, `POST /asignaciones` solo para `coordinador`), además de ocultar en el frontend las vistas no permitidas según los claims del token.
 
 ## Datos simulados
 

@@ -51,7 +51,7 @@ export const CoordinadorView: React.FC<CoordinadorViewProps> = ({
   const [selectedDonId, setSelectedDonId] = useState<string>(
     donaciones.find((d) => d.estado === 'REGISTRADO')?.id || donaciones[0]?.id || ''
   );
-  const [coordinador, setCoordinador] = useState('Ing. M. Seminario (COER Piura — Turno Alfa)');
+  const [coordinador, setCoordinador] = useState('Coordinación COER Piura — Turno Alfa');
   const [operadorLogistico, setOperadorLogistico] = useState(
     'Brigada INDECI Piura-Catacaos 04'
   );

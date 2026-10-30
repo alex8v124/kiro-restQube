@@ -131,7 +131,7 @@ let localNecesidades: NecesidadItem[] = [
     albergueId: 'ALB-CATACAOS-02',
     albergueNombre: 'Albergue San Pablo (Catacaos)',
     zona: 'Catacaos Sur (Bajo Piura)',
-    solicitante: 'Rosa Ipanaqué (Coordinadora de Albergue)',
+    solicitante: 'Coordinadora de Albergue (simulado)',
     textoReporte:
       'Urgente abastecimiento por corte de red tras desborde en Catacaos. Hay 85 familias damnificadas sin agua segura.',
     requerimientoResumen: 'Bidones de agua potable 20L',
@@ -174,7 +174,7 @@ let localNecesidades: NecesidadItem[] = [
     albergueId: 'ALB-CHULUCANAS-04',
     albergueNombre: 'Comité Vecinal Chulucanas',
     zona: 'Chulucanas — Alto Piura',
-    solicitante: 'Carlos Seminario (Comité de Alimentos)',
+    solicitante: 'Comité de Alimentos (simulado)',
     textoReporte:
       'Víveres no perecibles para olla común de familias damnificadas por huaicos.',
     requerimientoResumen: 'Conservas de atún, arroz y menestras',
@@ -230,8 +230,8 @@ let localAsignaciones: AsignacionItem[] = [
     categoria: 'MEDICINA',
     urgencia: 'CRITICA',
     prioridad_despacho: 1,
-    coordinador: 'Ing. M. Seminario (COER Piura)',
-    operadorLogistico: 'Brigada INDECI Alfa-02 (Cap. R. Valladolid)',
+    coordinador: 'Coordinación COER Piura',
+    operadorLogistico: 'Brigada INDECI Alfa-02',
     vehiculoPlaca: 'EGF-842 (Camión 4x4 Hidráulico)',
     estadoRuta: 'EN_TRANSITO',
     puntoControlActual: 'Cruzando Puente Independencia — Vía Piura-Catacaos Km 8',

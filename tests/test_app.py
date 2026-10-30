@@ -1,10 +1,19 @@
+import copy
+import io
 import json
+import logging
 import os
 from typing import Any, Dict, List
 
 os.environ["DISABLE_BEDROCK_LIVE"] = "1"
 
+import pytest  # noqa: E402
+
 import src.app as app  # noqa: E402
+
+# Estado semilla capturado al importar, antes de que cualquier prueba lo modifique
+_SEED_NECESIDADES = copy.deepcopy(app.NECESIDADES_DB)
+_SEED_DONACIONES = copy.deepcopy(app.DONACIONES_DB)
 
 
 class FakeDynamoTable:
@@ -161,10 +170,7 @@ def test_jobs_delayed_ready_at_transition(monkeypatch):
     assert job_data["output"] == "6202orik"
 
 
-def test_fen_domain_routes(monkeypatch):
-    fake_table = FakeDynamoTable()
-    monkeypatch.setattr(app, "TABLE", fake_table)
-
+def test_fen_domain_routes(fen_state):
     nec_res = app.lambda_handler(_make_event("GET", "/necesidades"))
     assert nec_res["statusCode"] == 200
 
@@ -182,3 +188,168 @@ def test_fen_domain_routes(monkeypatch):
     ia_data = json.loads(ia_res["body"])
     assert ia_data["categoria"] == "SALUD_EPIDEMIAS"
     assert ia_data["urgencia"] == "CRITICA"
+
+
+@pytest.fixture
+def fen_state(monkeypatch):
+    """Copias aisladas de los datos FEN en memoria para que cada prueba parta del mismo estado."""
+    monkeypatch.setattr(app, "TABLE", FakeDynamoTable())
+    monkeypatch.setattr(app, "NECESIDADES_DB", copy.deepcopy(_SEED_NECESIDADES))
+    monkeypatch.setattr(app, "DONACIONES_DB", copy.deepcopy(_SEED_DONACIONES))
+    monkeypatch.setattr(app, "ASIGNACIONES_DB", [])
+
+
+def _call(method: str, path: str, body: dict | None = None) -> tuple[int, Any]:
+    res = app.lambda_handler(_make_event(method, path, body))
+    assert res["headers"]["Access-Control-Allow-Origin"] == "*"
+    return res["statusCode"], json.loads(res["body"]) if res["body"] else None
+
+
+def test_get_necesidades_lista_seed(fen_state):
+    status, data = _call("GET", "/necesidades")
+    assert status == 200
+    assert {n["id"] for n in data} >= {"ALB-PIURA-01", "ALB-CATACAOS-02"}
+
+
+def test_post_necesidades_queda_listada(fen_state):
+    status, nec = _call("POST", "/necesidades", {"texto": "Faltan carpas y frazadas, techo colapsado"})
+    assert status == 201
+    assert nec["categoria"] == "ALBERGUE_TEMPORAL"
+    assert nec["fallback"] is True
+
+    _, listado = _call("GET", "/necesidades")
+    assert listado[0]["id"] == nec["id"]
+
+
+def test_donaciones_crear_listar_y_trazabilidad(fen_state):
+    status, don = _call(
+        "POST",
+        "/donaciones",
+        {"tracking_id": "TRK-TEST-001", "donante": "Empresa simulada", "item": "Bidones 20L", "cantidad": "30"},
+    )
+    assert status == 201
+    assert don["tracking_id"] == "TRK-TEST-001"
+    assert don["cantidad"] == 30
+    assert don["estado"] == "REGISTRADO"
+
+    _, listado = _call("GET", "/donaciones")
+    assert any(d["tracking_id"] == "TRK-TEST-001" for d in listado)
+
+    status, traza = _call("GET", "/trazabilidad/TRK-TEST-001")
+    assert status == 200
+    assert traza["linea_tiempo"][0]["completado"] is True
+
+    status, err = _call("GET", "/trazabilidad/TRK-NO-EXISTE")
+    assert status == 404
+    assert err["tracking_id"] == "TRK-NO-EXISTE"
+
+
+def test_asignaciones_crear_y_listar(fen_state):
+    status, asg = _call(
+        "POST",
+        "/asignaciones",
+        {"tracking_id": "TRK-FEN-2026", "necesidadId": "ALB-CATACAOS-02", "operadorLogistico": "Brigada simulada"},
+    )
+    assert status == 201
+    assert asg["necesidadId"] == "ALB-CATACAOS-02"
+    assert asg["estadoRuta"] == "ASIGNADO"
+    assert asg["operadorLogistico"] == "Brigada simulada"
+
+    _, listado = _call("GET", "/asignaciones")
+    assert [a["id"] for a in listado] == [asg["id"]]
+
+    _, traza = _call("GET", "/trazabilidad/TRK-FEN-2026")
+    assert traza["estado"] == "ASIGNADO"
+
+
+def test_asignaciones_rechaza_donacion_o_necesidad_inexistente(fen_state):
+    status, _ = _call("POST", "/asignaciones", {"tracking_id": "TRK-NO-EXISTE", "necesidadId": "ALB-PIURA-01"})
+    assert status == 404
+    status, _ = _call("POST", "/asignaciones", {"tracking_id": "TRK-FEN-2026", "necesidadId": "NEC-NO-EXISTE"})
+    assert status == 404
+
+
+def test_entregas_avanza_estado_y_linea_de_tiempo(fen_state):
+    _call("POST", "/asignaciones", {"tracking_id": "TRK-FEN-2026", "necesidadId": "ALB-CATACAOS-02"})
+
+    status, don = _call("PUT", "/entregas/TRK-FEN-2026", {"estado": "EN_RUTA", "puntoControlActual": "Km 8"})
+    assert status == 200
+    assert don["estado"] == "EN_RUTA"
+    assert don["linea_tiempo"][2]["completado"] is True
+    assert don["linea_tiempo"][3]["completado"] is False
+
+    status, don = _call("PUT", "/entregas/TRK-FEN-2026", {"estado": "ENTREGADO"})
+    assert status == 200
+    assert don["linea_tiempo"][3]["completado"] is True
+
+    _, asignaciones = _call("GET", "/asignaciones")
+    assert asignaciones[0]["estadoRuta"] == "ENTREGADO"
+    assert asignaciones[0]["puntoControlActual"] == "Km 8"
+
+    status, _ = _call("PUT", "/entregas/TRK-NO-EXISTE", {"estado": "ENTREGADO"})
+    assert status == 404
+
+
+def test_dashboard_refleja_entregas(fen_state):
+    _call("PUT", "/entregas/TRK-FEN-2026", {"estado": "ENTREGADO"})
+    status, dash = _call("GET", "/dashboard")
+    assert status == 200
+    assert dash["totalNecesidades"] == len(app.NECESIDADES_DB)
+    assert dash["necesidadesCriticas"] == 1
+    assert dash["entregasCompletadas"] == 1
+    assert dash["resumen"]["eficiencia_entrega"] == 100
+
+
+def test_ruta_desconocida_y_preflight(fen_state):
+    status, data = _call("GET", "/no-existe")
+    assert status == 404
+    assert data["path"] == "/no-existe"
+
+    status, data = _call("OPTIONS", "/donaciones")
+    assert status == 200
+    assert data is None
+
+
+@pytest.mark.skipif(app.boto3 is None, reason="boto3 no instalado")
+def test_bedrock_throttling_registra_error_y_usa_fallback(monkeypatch, caplog):
+    from botocore.exceptions import ClientError
+
+    class ThrottledClient:
+        def invoke_model(self, **kwargs: Any) -> Any:
+            raise ClientError(
+                {"Error": {"Code": "ThrottlingException", "Message": "Rate exceeded"}}, "InvokeModel"
+            )
+
+    monkeypatch.delenv("DISABLE_BEDROCK_LIVE", raising=False)
+    monkeypatch.setattr(app.boto3, "client", lambda **kwargs: ThrottledClient())
+
+    with caplog.at_level(logging.WARNING, logger=app.logger.name):
+        result = app.clasificar_necesidad_humanitaria("Urgente agua potable")
+
+    assert result["fallback"] is True
+    assert result["categoria"] == "AGUA_SANEAMIENTO"
+    assert "ThrottlingException" in caplog.text
+
+
+@pytest.mark.skipif(app.boto3 is None, reason="boto3 no instalado")
+def test_bedrock_respuesta_valida_no_usa_fallback(monkeypatch):
+    texto = '{"categoria": "SALUD_EPIDEMIAS", "urgencia": "CRITICA", "prioridad_despacho": 1, "cantidad": 12, "insumo_principal": "Suero oral"}'
+
+    class OkClient:
+        def invoke_model(self, **kwargs: Any) -> Any:
+            body = json.loads(kwargs["body"])
+            assert body["anthropic_version"] == "bedrock-2023-05-31"
+            return {"body": io.BytesIO(json.dumps({"content": [{"type": "text", "text": texto}]}).encode())}
+
+    monkeypatch.delenv("DISABLE_BEDROCK_LIVE", raising=False)
+    monkeypatch.setattr(app.boto3, "client", lambda **kwargs: OkClient())
+
+    result = app.clasificar_necesidad_humanitaria("Casos de fiebre en el albergue")
+    assert result == {
+        "categoria": "SALUD_EPIDEMIAS",
+        "urgencia": "CRITICA",
+        "prioridad_despacho": 1,
+        "cantidad": 12,
+        "insumo_principal": "Suero oral",
+        "fallback": False,
+    }

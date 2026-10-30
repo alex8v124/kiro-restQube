@@ -1,11 +1,12 @@
 {
-  "name": "Audit",
+  "name": "Contract Audit",
+  "description": "Al guardar el handler, la plantilla SAM o las specs, verifica que rutas, specs, pruebas e IAM sigan alineados.",
   "when": {
     "event": "file_saved",
-    "pattern": "**/*"
+    "pattern": "{src/app.py,template.yaml,.kiro/specs/**/*.md}"
   },
   "then": {
-    "action": "validate_syntax",
-    "prompt": "Mapea las 3 insignias automáticas (/health, /items, /jobs) para asegurar los 80 puntos iniciales. Implementa Amazon Bedrock con Claude 3 Haiku en /necesidades/ia usando la Messages API oficial para ganar los 40 puntos de GenAI. Normaliza las rutas eliminando trailing slashes (/health/ -> /health) y procesa inversión Unicode segura en /jobs. Incorpora GET /donaciones para que Daniel liste los envíos en el panel logístico. Empareja por categoría y prioridad (CRITICA -> ALTA -> MEDIA) para que agua se asigne a agua y medicinas a medicinas. Sube este archivo directo a tu función Lambda (ayuda-trazable-api)."
+    "action": "ask_agent",
+    "prompt": "Audita el archivo guardado contra .kiro/specs/ayuda-trazable/design.md y .kiro/steering/rules.md: (1) cada ruta de src/app.py está documentada en design.md con su código HTTP (201 en creación, 202 en /jobs, 404 si no existe) y tiene al menos una prueba en tests/test_app.py; (2) toda respuesta incluye Content-Type application/json y CORS; (3) template.yaml solo concede bedrock:InvokeModel y acciones DynamoDB sobre las tablas declaradas, sin AccessKey ni SecretKey; (4) los datos de ejemplo son simulados, sin nombres, correos ni teléfonos reales. Reporta cada discrepancia con archivo y línea, y ejecuta python -m pytest -q tests."
   }
 }
