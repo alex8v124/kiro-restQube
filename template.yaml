@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  FEN — Ayuda Trazable (AWS & Kiro IAthon 2026)
+  Starter Kit Serverless API con /health, /items, /jobs (ItemsTable) y rutas FEN + Bedrock.
+
+Parameters:
+  TeamId:
+    Type: String
+    Default: NexusLabs
+    Description: Identificador exacto del equipo registrado en el portal
+
+Globals:
+  Function:
+    Timeout: 12
+    MemorySize: 256
+    Runtime: python3.12
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        TEAM_ID: !Ref TeamId
+        TABLE_NAME: !Ref ItemsTable
+
+Resources:
+  ItemsTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: id
+        Type: String
+
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src.app.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ItemsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: "*"
+      FunctionUrlConfig:
+        AuthType: NONE
+      Events:
+        RootApi:
+          Type: Api
+          Properties:
+            Path: /
+            Method: ANY
+        ProxyApi:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+
+Outputs:
+  ApiUrl:
+    Description: "API Gateway endpoint URL for Prod stage (sin barra final)"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+  FunctionUrl:
+    Description: "Public Lambda Function URL"
+    Value: !GetAtt ApiFunctionUrl.FunctionUrl
