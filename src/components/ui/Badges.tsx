@@ -19,46 +19,46 @@ import {
 
 export const CategoriaBadge: React.FC<{ categoria: BedrockCategoria }> = ({ categoria }) => {
   const map: Record<
-    BedrockCategoria,
+    string,
     { label: string; color: string; icon: React.ReactNode }
   > = {
     AGUA: {
-      label: 'AGUA',
+      label: 'Agua Potable',
       color: 'bg-[#80f4ff]/10 text-[#80f4ff] border-[#80f4ff]/30',
       icon: <Droplets className="w-3.5 h-3.5" />,
     },
     AGUA_SANEAMIENTO: {
-      label: 'AGUA_SANEAMIENTO',
+      label: 'Agua y Saneamiento',
       color: 'bg-[#80f4ff]/10 text-[#80f4ff] border-[#80f4ff]/30',
       icon: <Droplets className="w-3.5 h-3.5" />,
     },
     ALIMENTOS: {
-      label: 'ALIMENTOS',
+      label: 'Alimentos',
       color: 'bg-[#ffcf99]/10 text-[#ffcf99] border-[#ffcf99]/30',
       icon: <Package className="w-3.5 h-3.5" />,
     },
     ALIMENTOS_PERECIBLES: {
-      label: 'ALIMENTOS_PERECIBLES',
+      label: 'Alimentos',
       color: 'bg-[#ffcf99]/10 text-[#ffcf99] border-[#ffcf99]/30',
       icon: <Package className="w-3.5 h-3.5" />,
     },
     MEDICINA: {
-      label: 'MEDICINA',
+      label: 'Salud y Medicina',
       color: 'bg-[#ff80b5]/10 text-[#ff80b5] border-[#ff80b5]/30',
       icon: <HeartPulse className="w-3.5 h-3.5" />,
     },
     SALUD_EPIDEMIAS: {
-      label: 'SALUD_EPIDEMIAS',
+      label: 'Salud y Medicina',
       color: 'bg-[#ff80b5]/10 text-[#ff80b5] border-[#ff80b5]/30',
       icon: <HeartPulse className="w-3.5 h-3.5" />,
     },
     ABRIGO: {
-      label: 'ABRIGO',
+      label: 'Refugio y Abrigo',
       color: 'bg-[#b080ff]/12 text-[#d4b8ff] border-[#b080ff]/35',
       icon: <Shield className="w-3.5 h-3.5" />,
     },
     ALBERGUE_TEMPORAL: {
-      label: 'ALBERGUE_TEMPORAL',
+      label: 'Refugio y Abrigo',
       color: 'bg-[#b080ff]/12 text-[#d4b8ff] border-[#b080ff]/35',
       icon: <Home className="w-3.5 h-3.5" />,
     },
@@ -68,7 +68,7 @@ export const CategoriaBadge: React.FC<{ categoria: BedrockCategoria }> = ({ cate
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-medium border ${item.color}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border ${item.color}`}
     >
       {item.icon}
       {item.label}
@@ -78,10 +78,17 @@ export const CategoriaBadge: React.FC<{ categoria: BedrockCategoria }> = ({ cate
 
 export const UrgenciaBadge: React.FC<{ urgencia: BedrockUrgencia }> = ({ urgencia }) => {
   const isCritica = urgencia === 'CRITICA';
-  const styles: Record<BedrockUrgencia, string> = {
-    CRITICA:
-      'bg-[#ff3366]/20 text-[#ff8ba7] border-[#ff3366]/60 shadow-[0_0_16px_rgba(255,51,102,0.35)]',
-    ALTA: 'bg-[#ff9900]/20 text-[#ffd180] border-[#ff9900]/50 shadow-[0_0_12px_rgba(255,153,0,0.2)]',
+  const labels: Record<string, string> = {
+    CRITICA: 'Urgencia Crítica',
+    ALTA: 'Prioridad Alta',
+    MEDIA: 'Prioridad Moderada',
+    MODERADA: 'Prioridad Moderada',
+    BAJA: 'Atención General',
+  };
+
+  const styles: Record<string, string> = {
+    CRITICA: 'bg-[#ff3366]/20 text-[#ff8ba7] border-[#ff3366]/50',
+    ALTA: 'bg-[#ff9900]/20 text-[#ffd180] border-[#ff9900]/40',
     MEDIA: 'bg-[#00c8ff]/15 text-[#80e5ff] border-[#00c8ff]/40',
     MODERADA: 'bg-[#00c8ff]/15 text-[#80e5ff] border-[#00c8ff]/40',
     BAJA: 'bg-white/10 text-[#a59bb8] border-white/20',
@@ -89,7 +96,7 @@ export const UrgenciaBadge: React.FC<{ urgencia: BedrockUrgencia }> = ({ urgenci
 
   return (
     <span
-      className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-xs font-mono font-bold border tracking-wide ${
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border ${
         styles[urgencia] || styles.ALTA
       }`}
     >
@@ -99,28 +106,34 @@ export const UrgenciaBadge: React.FC<{ urgencia: BedrockUrgencia }> = ({ urgenci
           <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ff3366]"></span>
         </span>
       ) : (
-        <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+        <AlertTriangle className="w-3 h-3 shrink-0" />
       )}
-      URGENCIA: {urgencia}
+      {labels[urgencia] || 'Atención Requerida'}
     </span>
   );
 };
 
 export const PrioridadBadge: React.FC<{ prioridad: PrioridadDespacho }> = ({ prioridad }) => {
+  const labels: Record<PrioridadDespacho, string> = {
+    1: 'Despacho Inmediato',
+    2: 'Despacho Prioritario',
+    3: 'Despacho Programado',
+  };
+
   const colors: Record<PrioridadDespacho, string> = {
-    1: 'bg-[#8847ff]/25 text-[#e2d3fe] border-[#b080ff]/50 shadow-[0_0_14px_rgba(136,71,255,0.25)]',
+    1: 'bg-[#8847ff]/20 text-[#e2d3fe] border-[#b080ff]/40',
     2: 'bg-[#2a2338] text-[#c4b5fd] border-[#b080ff]/25',
     3: 'bg-[#1f1a29] text-[#9ca3af] border-white/10',
   };
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-bold border ${
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border ${
         colors[prioridad] || colors[2]
       }`}
     >
-      <Zap className="w-3.5 h-3.5 text-[#b080ff]" />
-      P{prioridad} (prioridad_despacho: {prioridad})
+      <Zap className="w-3 h-3 text-[#b080ff]" />
+      {labels[prioridad] || 'Prioritario'}
     </span>
   );
 };
@@ -128,48 +141,45 @@ export const PrioridadBadge: React.FC<{ prioridad: PrioridadDespacho }> = ({ pri
 export const EstadoTrazabilidadBadge: React.FC<{ estado: EstadoTrazabilidad | string }> = ({
   estado,
 }) => {
-  const map: Record<string, { text: string; cls: string; icon: React.ReactNode; pulse?: boolean }> = {
+  const map: Record<string, { text: string; cls: string; icon: React.ReactNode }> = {
     REGISTRADO: {
-      text: 'REGISTRADO',
+      text: 'Registrado',
       cls: 'bg-[#b080ff]/15 text-[#e2d3fe] border-[#b080ff]/35',
       icon: <Package className="w-3.5 h-3.5" />,
     },
     ABIERTA: {
-      text: 'ABIERTA',
-      cls: 'bg-[#ff3366]/15 text-[#ff8ba7] border-[#ff3366]/40 shadow-[0_0_10px_rgba(255,51,102,0.2)]',
+      text: 'Pendiente',
+      cls: 'bg-[#ff3366]/15 text-[#ff8ba7] border-[#ff3366]/40',
       icon: <AlertTriangle className="w-3.5 h-3.5" />,
-      pulse: true,
     },
     ASIGNADO: {
-      text: 'ASIGNADO',
+      text: 'Asignado a Albergue',
       cls: 'bg-[#ff9900]/15 text-[#ffd180] border-[#ff9900]/35',
       icon: <Zap className="w-3.5 h-3.5" />,
     },
     ASIGNADA: {
-      text: 'ASIGNADA',
+      text: 'Asignado a Albergue',
       cls: 'bg-[#ff9900]/15 text-[#ffd180] border-[#ff9900]/35',
       icon: <Zap className="w-3.5 h-3.5" />,
     },
     EN_TRANSITO: {
-      text: 'EN TRÁNSITO',
-      cls: 'bg-[#00c8ff]/15 text-[#80e5ff] border-[#00c8ff]/40 shadow-[0_0_12px_rgba(0,200,255,0.2)]',
+      text: 'En Camino',
+      cls: 'bg-[#00c8ff]/15 text-[#80e5ff] border-[#00c8ff]/40',
       icon: <Truck className="w-3.5 h-3.5" />,
-      pulse: true,
     },
     EN_RUTA: {
-      text: 'EN RUTA',
-      cls: 'bg-[#00c8ff]/15 text-[#80e5ff] border-[#00c8ff]/40 shadow-[0_0_12px_rgba(0,200,255,0.2)]',
+      text: 'En Camino',
+      cls: 'bg-[#00c8ff]/15 text-[#80e5ff] border-[#00c8ff]/40',
       icon: <Truck className="w-3.5 h-3.5" />,
-      pulse: true,
     },
     ENTREGADO: {
-      text: 'ENTREGADO',
-      cls: 'bg-[#00ff99]/15 text-[#80ffcc] border-[#00ff99]/40 shadow-[0_0_12px_rgba(0,255,153,0.2)]',
+      text: 'Entregado con Éxito',
+      cls: 'bg-[#00ff99]/15 text-[#80ffcc] border-[#00ff99]/40',
       icon: <CheckCircle2 className="w-3.5 h-3.5" />,
     },
     ATENDIDA: {
-      text: 'ATENDIDA',
-      cls: 'bg-[#00ff99]/15 text-[#80ffcc] border-[#00ff99]/40 shadow-[0_0_12px_rgba(0,255,153,0.2)]',
+      text: 'Atendido',
+      cls: 'bg-[#00ff99]/15 text-[#80ffcc] border-[#00ff99]/40',
       icon: <CheckCircle2 className="w-3.5 h-3.5" />,
     },
   };
@@ -178,11 +188,8 @@ export const EstadoTrazabilidadBadge: React.FC<{ estado: EstadoTrazabilidad | st
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold border ${cfg.cls}`}
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${cfg.cls}`}
     >
-      {cfg.pulse && (
-        <span className="w-1.5 h-1.5 rounded-full bg-current animate-ping" />
-      )}
       {cfg.icon}
       {cfg.text}
     </span>

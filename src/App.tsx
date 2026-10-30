@@ -27,12 +27,12 @@ import { LogisticoView } from './components/views/LogisticoView';
 import { TrazabilidadView } from './components/views/TrazabilidadView';
 import { AdminView } from './components/views/AdminView';
 import {
-  Cpu,
-  FolderGit2,
+  Building2,
+  CheckCircle2,
+  HeartHandshake,
   MapPin,
   RefreshCw,
-  ShieldCheck,
-  Sparkles,
+  Truck,
 } from 'lucide-react';
 
 export function App() {
@@ -86,8 +86,11 @@ export function App() {
   const currentRoleMeta =
     ROLES_CONFIG.find((r) => r.id === activeRole) || ROLES_CONFIG[0];
 
+  const totalFamilias = necesidades.reduce((acc, n) => acc + (n.familiasAfectadas || 0), 0);
+  const enCaminoCount = asignaciones.filter(a => a.estadoRuta === 'EN_TRANSITO' || a.estadoRuta === 'EN_RUTA').length;
+
   return (
-    <div className="min-h-screen kiro-bg-grid flex flex-col">
+    <div className="min-h-screen kiro-bg-grid flex flex-col text-[#f2eefc]">
       <Navbar
         activeRole={activeRole}
         onSelectRole={setActiveRole}
@@ -99,68 +102,54 @@ export function App() {
         consoleCount={logs.length}
       />
 
-      {/* Hero Strip estilo Kiro Command Center con telemetría en vivo */}
-      <div className="border-b border-[#b080ff]/20 bg-gradient-to-r from-[#171224]/95 via-[#110d1a]/95 to-[#171224]/95 shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
+      {/* Franja Superior Limpia: Resumen de Impacto Comunitario */}
+      <section className="border-b border-[#b080ff]/15 bg-[#120e1a]/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-[#8847ff]/25 to-[#6d28d9]/30 border border-[#b080ff]/40 text-[#f3e8ff] shadow-[0_0_20px_rgba(136,71,255,0.3)]">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-[#8847ff]/20 text-[#e2d3fe] border border-[#b080ff]/30">
               {currentRoleMeta.icon}
             </div>
             <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-base sm:text-lg font-extrabold text-white tracking-tight">
-                  Módulo Activo: {currentRoleMeta.label}
-                </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-[#8847ff]/25 text-[#e2d3fe] border border-[#b080ff]/40 shadow-sm">
-                  {currentRoleMeta.badge}
-                </span>
-              </div>
-              <p className="text-xs text-[#c4b8db]">{currentRoleMeta.shortDesc}</p>
+              <h1 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                {currentRoleMeta.label}
+              </h1>
+              <p className="text-xs text-[#a59bb8]">{currentRoleMeta.shortDesc}</p>
             </div>
           </div>
 
-          {/* Telemetría Humanitaria Rápida */}
-          <div className="flex flex-wrap items-center gap-2.5 text-xs font-mono">
-            <div className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-xl bg-[#161220] border border-white/10 text-[#d8cce8]">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#ff3366] animate-pulse"></span>
-                <span>Albergues: <strong className="text-white font-bold">{necesidades.length}</strong></span>
-              </span>
-              <span className="text-white/20">|</span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#80f4ff]"></span>
-                <span>En Ruta: <strong className="text-[#80f4ff] font-bold">{asignaciones.filter(a => a.estadoRuta === 'EN_RUTA').length}</strong></span>
-              </span>
-              <span className="text-white/20">|</span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#80ffb5]"></span>
-                <span>Familias: <strong className="text-[#80ffb5] font-bold">{necesidades.reduce((acc, n) => acc + (n.familiasAfectadas || 0), 0)}</strong></span>
-              </span>
+          {/* Resumen de Emergencia en Lenguaje Humano y Cálido */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#181324] border border-white/5 text-[#c4b8db]">
+              <Building2 className="w-3.5 h-3.5 text-[#b080ff]" />
+              <span>Albergues atendidos: <strong className="text-white">{necesidades.length}</strong></span>
             </div>
-
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#161220] border border-[#b080ff]/25 text-[#e2d3fe]">
-              <Cpu className="w-3.5 h-3.5 text-[#b080ff]" />
-              <span className="hidden sm:inline">Amazon Bedrock</span> Claude 3
-            </span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#181324] border border-white/5 text-[#c4b8db]">
+              <Truck className="w-3.5 h-3.5 text-[#80f4ff]" />
+              <span>En camino: <strong className="text-white">{enCaminoCount}</strong></span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#181324] border border-white/5 text-[#c4b8db]">
+              <HeartHandshake className="w-3.5 h-3.5 text-[#80ffb5]" />
+              <span>Familias asistidas: <strong className="text-[#80ffb5]">{totalFamilias}</strong></span>
+            </div>
 
             <button
               onClick={refreshAllData}
               disabled={loadingData}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#231b30] hover:bg-[#2e2340] text-white border border-[#b080ff]/35 hover:border-[#b080ff]/70 transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] cursor-pointer"
-              title="Sincronizar datos con backend o almacenamiento local"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#20182e] hover:bg-[#2b203d] text-white border border-[#b080ff]/30 transition cursor-pointer text-xs font-medium"
+              title="Actualizar datos"
             >
               <RefreshCw
                 className={`w-3.5 h-3.5 text-[#80ffb5] ${
                   loadingData ? 'animate-spin' : ''
                 }`}
               />
-              <span className="font-semibold">Sincronizar</span>
+              <span className="hidden sm:inline">Actualizar</span>
             </button>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Contenido Principal por Rol */}
+      {/* Contenido Principal */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
         {activeRole === 'solicitante' && (
           <SolicitanteView
@@ -206,24 +195,27 @@ export function App() {
         )}
       </main>
 
-      {/* Footer Técnico con Acceso Rápido a Certificación de Insignias */}
-      <footer className="border-t border-white/10 bg-[#0b0910]/90 py-4 mt-10">
+      {/* Pie de Página Limpio y Confiable */}
+      <footer className="border-t border-white/5 bg-[#0b0910] py-4 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-3 text-xs text-[#9589ab]">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-[#b080ff]" />
+            <span className="w-2 h-2 rounded-full bg-[#80ffb5]"></span>
             <span>
-              <strong>FEN — Ayuda Trazable</strong> • Hackatón AWS &amp; Kiro 2026 (IATHON)
+              <strong>Ayuda Trazable FEN</strong> • Coordinación solidaria para el norte del Perú
             </span>
           </div>
-          <div className="flex flex-wrap items-center gap-4 font-mono">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => setActiveRole('administrador')}
-              className="text-[#80ffb5] hover:underline flex items-center gap-1 cursor-pointer"
+              className="text-[#a59bb8] hover:text-white hover:underline cursor-pointer"
             >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              Abrir Verificador 150 Pts (/health • /items • /jobs)
+              Panel de Control y Diagnóstico
             </button>
-            <span>CORS: * | Auth: NONE | Timeout &le; 12s</span>
+            <span className="text-white/20">|</span>
+            <span className="text-[#80ffb5] flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              Conexión Segura Activa
+            </span>
           </div>
         </div>
       </footer>
