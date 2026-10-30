@@ -1,14 +1,21 @@
-﻿# FEN Ayuda Trazable — La Coordinadora de Albergue reporta una necesidad urgente y recibe en segundos la categoría, urgencia y prioridad de despacho clasificadas por IA, para que la ayuda humanitaria en Piura y Catacaos llegue a quien la necesita sin perderse en el camino.
+# FEN Ayuda Trazable
 
-Plataforma serverless de coordinación humanitaria ante el Fenómeno El Niño. Convierte reportes en lenguaje natural en flujos trazables de donación → asignación → entrega, identificados por un `tracking_id` único visible para cada actor del sistema.
+> **AWS & Kiro Hackathon 2026 (IAThon Kiro)** · Frente: *Solidaridad y ayuda humanitaria ante el Fenómeno El Niño (FEN)* · Reto: **Ayuda trazable** · Equipo: **NexusLabs**
+
+La Coordinadora de Albergue reporta una necesidad urgente y recibe en segundos la categoría, urgencia y prioridad de despacho clasificadas por IA, para que la ayuda humanitaria en Piura y Catacaos llegue a quien la necesita sin perderse en el camino.
+
+Plataforma serverless de coordinación humanitaria ante el Fenómeno El Niño. Convierte reportes en lenguaje natural en flujos trazables de **donación → asignación → entrega**, identificados por un `tracking_id` único visible para cada actor del sistema.
 
 ## Stack
 
-- **Frontend:** React 18 + TypeScript + Vite (6 vistas por rol)
-- **Backend:** AWS Lambda Python 3.12 (handler único)
-- **Base de datos:** Amazon DynamoDB (5 tablas, PAY_PER_REQUEST)
-- **IA:** Amazon Bedrock Runtime — `anthropic.claude-3-haiku-20240307-v1:0`
-- **Infraestructura:** AWS SAM (`template.yaml`) — API Gateway HTTP + Lambda Function URL
+| Capa | Tecnología |
+|---|---|
+| **Frontend** | React 18 + TypeScript + Vite + Tailwind CSS 4 (6 vistas por rol) |
+| **Backend** | AWS Lambda — `backend/index.mjs` (Node.js ESM, handler único) |
+| **Base de datos** | Amazon DynamoDB (tablas por dominio, PAY_PER_REQUEST) |
+| **IA** | Amazon Bedrock Runtime — `anthropic.claude-3-haiku-20240307-v1:0` |
+| **Infraestructura** | AWS SAM / API Gateway HTTP + Lambda Function URL |
+| **Orquestación** | Kiro (`.kiro/`) — specs, steering y hooks auditables |
 
 ## Inicio rápido
 
@@ -20,8 +27,12 @@ npm install
 cp .env.example .env
 # Editar VITE_API_URL con la Lambda Function URL (HTTPS, sin barra final)
 
-# 3. Levantar el frontend en desarrollo
+# 3. Levantar el frontend en desarrollo (http://localhost:5173)
 npm run dev
+
+# 4. Build de producción
+npm run build
+npm run preview
 ```
 
 ## Despliegue del backend
@@ -33,19 +44,71 @@ sam deploy --guided
 
 ## Roles
 
-| Rol | Acción principal |
-|-----|-----------------|
-| Solicitante | Reporta necesidades del albergue → clasificación Bedrock |
-| Donante | Registra aportes → genera `tracking_id` |
-| Coordinador | Asigna donación ↔ necesidad |
-| Logístico | Controla estado de ruta hasta entrega |
-| Trazabilidad | Consulta línea de tiempo por `tracking_id` |
-| Administrador | Consola de certificación (verificador oficial) |
+| Rol | Acción principal | Endpoint |
+|-----|-----------------|----------|
+| Solicitante | Reporta necesidades del albergue → clasificación Bedrock | `POST /necesidades` |
+| Donante | Registra aportes → genera `tracking_id` | `POST /donaciones` |
+| Coordinador | Asigna donación ↔ necesidad | `POST /asignaciones` |
+| Logístico | Controla estado de ruta hasta entrega | `POST /entregas` |
+| Trazabilidad | Consulta línea de tiempo por `tracking_id` | `GET /trazabilidad` |
+| Administrador | Consola de certificación (verificador oficial) | `GET /health`, `POST /items`, `POST /jobs` |
+
+## API / Endpoints
+
+### Verificador automático (150 pts)
+
+| Endpoint | Método | Respuesta | Pts |
+|---|---|---|---|
+| `/health` | GET | `{"status":"ok","team":"<teamId>"}` | +20 |
+| `/items` | POST | `201 {"id","value"}` | +25 |
+| `/items/{id}` · `/items` | GET | `200` | |
+| `/jobs` | POST | `202 {"jobId"}` | +35 |
+| `/jobs/{jobId}` | GET | `200 {"status":"done","output"}` | |
+
+### Endpoints de dominio FEN
+
+| Endpoint | Método | Descripción |
+|---|---|---|
+| `/necesidades` | GET / POST | Requerimientos de albergues |
+| `/necesidades/ia` | POST | Clasificación GenAI con Bedrock |
+| `/donaciones` | GET / POST | Donaciones y emisión de `tracking_id` |
+| `/asignaciones` | GET / POST | Cruce Donación → Necesidad |
+| `/entregas` | POST | Avance de estado logístico |
+| `/trazabilidad` | GET | Detalle público por `tracking_id` |
+| `/dashboard` | GET | Métricas de impacto |
+
+## Clasificación Bedrock
+
+- **Modelo:** `anthropic.claude-3-haiku-20240307-v1:0`
+- **Categorías:** `AGUA_SANEAMIENTO` · `ALIMENTOS_PERECIBLES` · `SALUD_EPIDEMIAS` · `ALBERGUE_TEMPORAL`
+- **Urgencias:** `CRITICA` · `ALTA` · `MODERADA`
+- **Prioridades:** `1` (mayor) · `2` · `3`
+- **Fallback determinista** siempre disponible (marca `fallback: true` ante throttling o latencia).
+
+## Despliegue del frontend
+
+- **Vercel:** importa el repo (framework **Vite**), build `npm run build`, output `dist`, y configura `VITE_API_URL` / `VITE_TEAM_ID`.
+- **GitLab Pages:** el `.gitlab-ci.yml` incluye auditoría estática de `.kiro/` + build + publicación.
+- **AWS CloudFront + S3:** compila y sube `dist/` a un bucket S3 con CloudFront como CDN (configura `404.html` para SPA).
+
+## Puntuación objetivo (1000 pts)
+
+| Entrega | Pts |
+|---|---|
+| Código (estático + agente) | 350 |
+| Pitch | 250 |
+| Frontend | 150 |
+| Documento | 100 |
+| Bonus (insignias) | 150 |
 
 ## Convenciones
 
-Ver `.kiro/steering/project.md` y `.kiro/steering/fen-rules.md`.
+Ver [`.kiro/steering/project.md`](.kiro/steering/project.md) y `.kiro/steering/fen-rules.md`.
 
 ## Spec
 
 Ver `.kiro/specs/ayuda-trazable/` — `requirements.md`, `design.md`, `tasks.md`.
+
+## Datos simulados
+
+Todos los datos son **ficticios** para la demo del IAThon. No se conectan sistemas externos reales ni se exponen datos personales de beneficiarios (se usan identificadores simulados como `ALB-####`, `TRK-####`, `DON-###`).
