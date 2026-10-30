@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ayuda Trazable — FEN</title>
-  <meta name="description" content="Plataforma simple y accesible para donar o pedir ayuda y seguir cada entrega, ante el Fenómeno El Niño." />
+  <meta name="description" content="Doná o pedí ayuda y seguí tu ayuda con un código, de forma simple." />
   <style>
     :root {
       --bg: #f6f7f9;
@@ -19,7 +19,7 @@
       --critical: #b91c1c;
       --focus: #1d4ed8;
       --radius: 14px;
-      --maxw: 760px;
+      --maxw: 640px;
     }
 
     * { box-sizing: border-box; }
@@ -29,17 +29,13 @@
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
-      line-height: 1.65;
-      font-size: 17px; /* texto más grande para mejor lectura */
+      line-height: 1.6;
+      font-size: 17px;
     }
 
     a { color: var(--accent); }
 
-    :focus-visible {
-      outline: 3px solid var(--focus);
-      outline-offset: 2px;
-      border-radius: 6px;
-    }
+    :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
 
     .skip-link {
       position: absolute; left: -9999px; top: 0;
@@ -57,122 +53,120 @@
 
     .container { max-width: var(--maxw); margin: 0 auto; padding: 0 18px; }
 
-    /* Cabecera */
     .site-header { background: var(--surface); border-bottom: 1px solid var(--border); }
     .header-inner { display: flex; align-items: center; gap: 12px; padding: 16px 18px; }
     .brand {
-      font-size: 1.3rem; font-weight: 800; color: var(--text);
+      font-size: 1.25rem; font-weight: 800; color: var(--text);
       text-decoration: none; display: inline-flex; align-items: center; gap: 10px;
     }
     .brand-mark { color: var(--accent); }
 
-    main { padding: 28px 0 56px; }
+    main { padding: 26px 0 56px; }
 
-    h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 10px; }
-    h2 { font-size: 1.5rem; line-height: 1.3; margin: 0 0 14px; }
-    .lead { color: var(--muted); font-size: 1.05rem; margin: 0 0 26px; max-width: 560px; }
+    h1 { font-size: 1.85rem; line-height: 1.2; margin: 0 0 8px; }
+    h2 { font-size: 1.5rem; line-height: 1.25; margin: 0 0 8px; }
+    .lead { color: var(--muted); font-size: 1rem; margin: 0 0 22px; }
 
-    /* Botones grandes de acción */
-    .acciones { display: grid; gap: 14px; margin-top: 4px; }
-    .accion {
-      display: flex; align-items: center; gap: 16px;
-      width: 100%; text-align: left;
-      background: var(--surface);
-      border: 2px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      cursor: pointer;
-      font-family: inherit; font-size: 1.1rem; color: var(--text);
-      transition: border-color .15s ease, box-shadow .15s ease;
+    /* Explicación visual "cómo funciona" */
+    .pasos {
+      list-style: none; margin: 0 0 24px; padding: 0;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
     }
-    .accion:hover { border-color: var(--accent); box-shadow: 0 4px 14px rgba(29,78,216,.10); }
-    .accion .emoji { font-size: 1.9rem; line-height: 1; }
-    .accion .titulo { font-weight: 700; display: block; }
-    .accion .desc { color: var(--muted); font-size: 0.92rem; display: block; margin-top: 2px; }
+    .pasos li {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 10px; text-align: center;
+    }
+    .pasos .num {
+      display: block; width: 24px; height: 24px; line-height: 24px;
+      margin: 0 auto 6px; border-radius: 50%;
+      background: var(--accent); color: #fff; font-size: 0.85rem; font-weight: 800;
+    }
+    .pasos .emoji { display: block; font-size: 1.5rem; line-height: 1.2; }
+    .pasos .txt { display: block; font-size: 0.85rem; font-weight: 600; margin-top: 4px; }
+
+    /* Botones grandes */
+    .acciones { display: grid; gap: 12px; }
+    .accion {
+      display: flex; align-items: center; gap: 14px;
+      width: 100%; text-align: left;
+      background: var(--surface); border: 2px solid var(--border);
+      border-radius: var(--radius); padding: 18px 18px;
+      cursor: pointer; font-family: inherit; font-size: 1.15rem; font-weight: 700; color: var(--text);
+    }
+    .accion:hover { border-color: var(--accent); }
+    .accion .emoji { font-size: 1.8rem; line-height: 1; }
 
     .link-secundario {
-      display: inline-block; margin-top: 20px;
+      display: inline-block; margin-top: 18px;
       color: var(--accent); font-weight: 600; text-decoration: underline;
       background: none; border: none; cursor: pointer; font-size: 0.95rem; padding: 4px;
     }
 
-    /* Botón volver */
     .volver {
-      display: inline-flex; align-items: center; gap: 8px;
+      display: inline-flex; align-items: center; gap: 6px;
       background: none; border: none; cursor: pointer;
-      color: var(--accent); font-weight: 600; font-size: 1rem; padding: 6px 0; margin-bottom: 14px;
+      color: var(--accent); font-weight: 600; font-size: 1rem; padding: 6px 0; margin-bottom: 12px;
     }
 
     /* Formularios */
-    form { max-width: 560px; }
-    .field { margin-bottom: 18px; }
-    .field label { display: block; font-weight: 700; margin-bottom: 8px; font-size: 1rem; }
+    form { max-width: 520px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-weight: 700; margin-bottom: 7px; font-size: 1rem; }
     .field input, .field textarea {
-      width: 100%; padding: 14px 14px;
+      width: 100%; padding: 14px;
       border: 2px solid var(--border); border-radius: 10px;
       font-size: 1.05rem; font-family: inherit; color: var(--text); background: var(--surface);
     }
-    .field textarea { resize: vertical; min-height: 120px; }
-    .field .hint { color: var(--muted); font-size: 0.88rem; margin-top: 6px; }
+    .field textarea { resize: vertical; min-height: 110px; }
+    .field .hint { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
 
     button.btn {
-      appearance: none;
-      background: var(--accent); color: var(--accent-ink);
-      border: none; border-radius: 12px;
-      padding: 15px 22px; font-size: 1.1rem; font-weight: 700; cursor: pointer;
-      width: 100%;
+      appearance: none; background: var(--accent); color: var(--accent-ink);
+      border: none; border-radius: 12px; padding: 15px 20px;
+      font-size: 1.1rem; font-weight: 700; cursor: pointer; width: 100%;
     }
     button.btn:hover { background: #1e40af; }
     button.btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    /* Mensajes de estado */
-    .status { border-radius: 12px; padding: 15px 16px; margin-top: 16px; font-size: 1rem; }
+    .status { border-radius: 12px; padding: 14px 16px; margin-top: 14px; font-size: 1rem; }
     .status[hidden] { display: none; }
     .status-info { background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe; }
     .status-ok   { background: #f0fdf4; color: var(--ok); border: 1px solid #bbf7d0; }
     .status-err  { background: #fef2f2; color: var(--critical); border: 1px solid #fecaca; }
 
-    /* Código destacado (para que el donante lo guarde) */
     .codigo {
       display: inline-block; margin-top: 10px;
       background: var(--accent); color: #fff;
       font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
-      font-size: 1.3rem; font-weight: 800; letter-spacing: 0.04em;
-      padding: 8px 18px; border-radius: 10px;
+      font-size: 1.25rem; font-weight: 800; letter-spacing: 0.04em;
+      padding: 8px 16px; border-radius: 10px;
     }
 
-    /* Línea de tiempo simple */
-    .timeline { list-style: none; margin: 18px 0 0; padding: 0; }
-    .timeline li {
-      display: flex; gap: 12px; align-items: flex-start;
-      padding: 0 0 16px; position: relative;
-    }
-    .timeline li .punto { flex: 0 0 22px; text-align: center; font-size: 1.15rem; line-height: 1.4; }
+    .timeline { list-style: none; margin: 16px 0 0; padding: 0; }
+    .timeline li { display: flex; gap: 12px; align-items: flex-start; padding: 0 0 14px; }
+    .timeline li .punto { flex: 0 0 22px; text-align: center; font-size: 1.1rem; line-height: 1.4; }
     .timeline li.done .punto { color: var(--ok); }
     .timeline li.current .punto { color: var(--accent); }
-    .timeline li .txt { color: var(--text); }
-    .timeline li .ts { color: var(--muted); font-size: 0.85rem; display: block; }
+    .timeline li .ts { color: var(--muted); font-size: 0.82rem; display: block; }
 
-    /* Listas de transparencia */
     .cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
     .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
     .card h3 { margin: 0 0 4px; font-size: 1.05rem; }
     .card p { margin: 0; color: var(--muted); }
     .card .meta { font-size: 0.88rem; color: var(--muted); margin-top: 8px; }
 
-    .badge {
-      display: inline-block; padding: 3px 12px; border-radius: 999px;
-      font-size: 0.8rem; font-weight: 700;
-    }
+    .badge { display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; }
     .badge-crit  { background: #fee2e2; color: var(--critical); }
     .badge-warn  { background: #fef3c7; color: var(--warn); }
     .badge-info  { background: #dbeafe; color: #1e40af; }
     .badge-ok    { background: #dcfce7; color: var(--ok); }
     .badge-muted { background: #e5e7eb; color: var(--muted); }
 
-    /* Pie */
-    .site-footer { border-top: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 0.9rem; padding: 20px 0; text-align: center; }
+    .site-footer { border-top: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 0.85rem; padding: 18px 0; text-align: center; }
 
+    @media (max-width: 480px) {
+      .pasos { grid-template-columns: 1fr; }
+    }
     @media (prefers-reduced-motion: reduce) {
       * { transition: none !important; animation: none !important; }
     }
@@ -192,55 +186,48 @@
   <div class="container">
     <main id="contenido">
 
-      <!-- ===================== INICIO ===================== -->
+      <!-- INICIO -->
       <section id="vista-inicio" aria-labelledby="titulo-inicio">
-        <h1 id="titulo-inicio" tabindex="-1" data-focus>Ayuda que llega, y se puede seguir</h1>
-        <p class="lead">Doná o pedí ayuda en pocos pasos. Te damos un código para saber, en todo momento, dónde está tu ayuda.</p>
+        <h1 id="titulo-inicio" tabindex="-1" data-focus>Ayuda Trazable</h1>
+        <p class="lead">Doná o pedí ayuda. Te damos un código para seguir tu ayuda.</p>
+
+        <ol class="pasos" aria-label="Cómo funciona">
+          <li><span class="num" aria-hidden="true">1</span><span class="emoji" aria-hidden="true">🎁</span><span class="txt">Donás</span></li>
+          <li><span class="num" aria-hidden="true">2</span><span class="emoji" aria-hidden="true">🔢</span><span class="txt">Recibís un código</span></li>
+          <li><span class="num" aria-hidden="true">3</span><span class="emoji" aria-hidden="true">📍</span><span class="txt">Seguís tu ayuda</span></li>
+        </ol>
 
         <div class="acciones">
           <button class="accion" data-ir="donar">
-            <span class="emoji" aria-hidden="true">🎁</span>
-            <span>
-              <span class="titulo">Quiero donar</span>
-              <span class="desc">Registro lo que quiero dar</span>
-            </span>
+            <span class="emoji" aria-hidden="true">🎁</span> Quiero donar
           </button>
           <button class="accion" data-ir="seguir">
-            <span class="emoji" aria-hidden="true">🔍</span>
-            <span>
-              <span class="titulo">Seguir mi donación</span>
-              <span class="desc">¿A dónde llegó lo que doné?</span>
-            </span>
+            <span class="emoji" aria-hidden="true">🔍</span> Seguir mi donación
           </button>
           <button class="accion" data-ir="ayuda">
-            <span class="emoji" aria-hidden="true">🆘</span>
-            <span>
-              <span class="titulo">Necesito ayuda</span>
-              <span class="desc">Pido lo que mi comunidad necesita</span>
-            </span>
+            <span class="emoji" aria-hidden="true">🆘</span> Necesito ayuda
           </button>
         </div>
 
         <button class="link-secundario" data-ir="ver">Ver qué se necesita ahora →</button>
       </section>
 
-      <!-- ===================== DONAR ===================== -->
+      <!-- DONAR -->
       <section id="vista-donar" aria-labelledby="titulo-donar" hidden>
         <button class="volver" data-ir="inicio">← Volver</button>
-        <h2 id="titulo-donar" tabindex="-1" data-focus>Hacer una donación</h2>
-        <p class="lead">Completá estos datos y te damos un código para seguir tu donación.</p>
+        <h2 id="titulo-donar" tabindex="-1" data-focus>Quiero donar</h2>
 
         <form id="form-donar">
           <div class="field">
-            <label for="input-donante">¿Quién dona?</label>
+            <label for="input-donante">Tu nombre</label>
             <input id="input-donante" name="donante" type="text" placeholder="Tu nombre u organización" required autocomplete="name" />
           </div>
           <div class="field">
-            <label for="input-item">¿Qué vas a donar?</label>
+            <label for="input-item">Qué donás</label>
             <input id="input-item" name="item" type="text" placeholder="Ej. 40 bidones de agua" required />
           </div>
           <div class="field">
-            <label for="input-cantidad">¿Cuántas unidades?</label>
+            <label for="input-cantidad">Cantidad</label>
             <input id="input-cantidad" name="cantidad" type="number" min="1" placeholder="Ej. 40" required />
           </div>
           <button class="btn" type="submit">Registrar mi donación</button>
@@ -248,54 +235,51 @@
         <div id="resultado-donar" aria-live="polite"></div>
       </section>
 
-      <!-- ===================== SEGUIR ===================== -->
+      <!-- SEGUIR -->
       <section id="vista-seguir" aria-labelledby="titulo-seguir" hidden>
         <button class="volver" data-ir="inicio">← Volver</button>
         <h2 id="titulo-seguir" tabindex="-1" data-focus>Seguir mi donación</h2>
-        <p class="lead">Escribí el código que te dimos al donar, y mirá dónde está tu ayuda.</p>
 
         <form id="form-seguir">
           <div class="field">
             <label for="input-tracking">Tu código</label>
             <input id="input-tracking" name="tracking_id" type="text" placeholder="Ej. TRK-FEN-2026" required autocomplete="off" />
           </div>
-          <button class="btn" type="submit">Buscar mi donación</button>
+          <button class="btn" type="submit">Buscar</button>
         </form>
         <div id="resultado-seguir" aria-live="polite"></div>
       </section>
 
-      <!-- ===================== AYUDA ===================== -->
+      <!-- AYUDA -->
       <section id="vista-ayuda" aria-labelledby="titulo-ayuda" hidden>
         <button class="volver" data-ir="inicio">← Volver</button>
-        <h2 id="titulo-ayuda" tabindex="-1" data-focus>Pedir ayuda</h2>
-        <p class="lead">Contanos qué necesita tu comunidad. Escribilo con tus palabras; nosotros nos encargamos del resto.</p>
+        <h2 id="titulo-ayuda" tabindex="-1" data-focus>Necesito ayuda</h2>
 
         <form id="form-ayuda">
           <div class="field">
-            <label for="input-albergue">¿Dónde estás?</label>
+            <label for="input-albergue">Dónde estás</label>
             <input id="input-albergue" name="albergue" type="text" placeholder="Ej. Albergue San Pablo, Catacaos" required />
           </div>
           <div class="field">
-            <label for="input-texto">¿Qué necesitás?</label>
-            <textarea id="input-texto" name="texto" placeholder="Ej. Se desbordó el canal y faltan 60 bidones de agua potable…" required></textarea>
-            <p class="hint">No te preocupes por cómo escribirlo. Escribilo como puedas.</p>
+            <label for="input-texto">Qué necesitás</label>
+            <textarea id="input-texto" name="texto" placeholder="Ej. Faltan 60 bidones de agua potable…" required></textarea>
+            <p class="hint">Escribilo con tus palabras.</p>
           </div>
-          <button class="btn" type="submit">Enviar mi pedido</button>
+          <button class="btn" type="submit">Enviar</button>
         </form>
         <div id="resultado-ayuda" aria-live="polite"></div>
       </section>
 
-      <!-- ===================== VER (transparencia) ===================== -->
+      <!-- VER -->
       <section id="vista-ver" aria-labelledby="titulo-ver" hidden>
         <button class="volver" data-ir="inicio">← Volver</button>
         <h2 id="titulo-ver" tabindex="-1" data-focus>Qué se necesita ahora</h2>
-        <p class="lead">Esto es lo que la comunidad pidió y lo que ya se donó.</p>
 
-        <h3 style="margin: 20px 0 10px; font-size:1.1rem;">Pedidos de ayuda</h3>
+        <h3 style="margin: 18px 0 8px; font-size:1.05rem;">Pedidos de ayuda</h3>
         <ul class="cards" id="lista-necesidades"></ul>
         <p class="status status-info" id="estado-necesidades" role="status" hidden></p>
 
-        <h3 style="margin: 24px 0 10px; font-size:1.1rem;">Donaciones recibidas</h3>
+        <h3 style="margin: 22px 0 8px; font-size:1.05rem;">Donaciones</h3>
         <ul class="cards" id="lista-donaciones"></ul>
         <p class="status status-info" id="estado-donaciones" role="status" hidden></p>
       </section>
@@ -304,19 +288,15 @@
   </div>
 
   <footer class="site-footer">
-    <div class="container">Ayuda Trazable · Datos de prueba · AWS &amp; Kiro Hackathon 2026</div>
+    <div class="container">Ayuda Trazable · Datos de prueba</div>
   </footer>
 
   <script>
     (function () {
       "use strict";
 
-      // URL de la API (Lambda). Se puede cambiar editando esta línea.
-      const API_BASE = "https://lpcdw5nz4ndpl5ztzrxqp55wn40egvhl.lambda-url.us-east-1.on.aws";
+      var API_BASE = "https://lpcdw5nz4ndpl5ztzrxqp55wn40egvhl.lambda-url.us-east-1.on.aws";
 
-      // =====================================================================
-      // Navegación entre vistas
-      // =====================================================================
       var vistas = ["vista-inicio", "vista-donar", "vista-seguir", "vista-ayuda", "vista-ver"];
 
       function mostrarVista(id) {
@@ -326,7 +306,6 @@
         });
         var foco = document.querySelector("#" + id + " [data-focus]");
         if (foco) foco.focus();
-        // Cargar datos según la vista
         if (id === "vista-ver") cargarVer();
         window.scrollTo(0, 0);
       }
@@ -337,9 +316,6 @@
         });
       });
 
-      // =====================================================================
-      // Utilidades
-      // =====================================================================
       function esc(s) {
         return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
           return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
@@ -390,14 +366,10 @@
         e = String(e || "").toUpperCase();
         if (e.indexOf("ENTREG") === 0) return "✅ Tu ayuda ya fue entregada";
         if (e.indexOf("TRANSITO") >= 0 || e.indexOf("RUTA") >= 0) return "🚚 Tu ayuda está en camino";
-        if (e.indexOf("ASIGNAD") >= 0) return "🎯 Tu ayuda ya fue asignada a un albergue";
-        if (e.indexOf("REGISTR") >= 0) return "📦 Tu ayuda fue registrada";
+        if (e.indexOf("ASIGNAD") >= 0) return "🎯 Tu ayuda fue asignada a un albergue";
         return "📦 Tu ayuda fue registrada";
       }
 
-      // =====================================================================
-      // Donar
-      // =====================================================================
       document.getElementById("form-donar").addEventListener("submit", function (e) {
         e.preventDefault();
         var out = document.getElementById("resultado-donar");
@@ -406,22 +378,17 @@
           item: document.getElementById("input-item").value.trim(),
           cantidad: Number(document.getElementById("input-cantidad").value)
         };
-        out.innerHTML = '<p class="status status-info" role="status">Guardando tu donación…</p>';
+        out.innerHTML = '<p class="status status-info" role="status">Guardando…</p>';
         api("/donaciones", { method: "POST", body: JSON.stringify(body) }).then(function (d) {
           out.innerHTML =
-            '<div class="status status-ok" role="status">' +
-              "<strong>¡Gracias!</strong> Tu donación quedó registrada. Guardá este código para seguirla:" +
-              '<br><span class="codigo">' + esc(d.tracking_id) + "</span>" +
-            "</div>";
+            '<div class="status status-ok" role="status"><strong>¡Gracias!</strong> Guardá este código para seguir tu ayuda:' +
+            '<br><span class="codigo">' + esc(d.tracking_id) + "</span></div>";
           e.target.reset();
         }).catch(function (err) {
-          mostrar(out, "err", "No se pudo guardar. Intentalo de nuevo.<br><small>" + esc(err.message) + "</small>");
+          mostrar(out, "err", "No se pudo guardar. Intentalo de nuevo.");
         });
       });
 
-      // =====================================================================
-      // Seguir
-      // =====================================================================
       document.getElementById("form-seguir").addEventListener("submit", function (e) {
         e.preventDefault();
         var out = document.getElementById("resultado-seguir");
@@ -437,18 +404,15 @@
               var punto = ev.completado ? "✔" : "●";
               var ts = ev.timestamp ? '<span class="ts">' + fmtFecha(ev.timestamp) + "</span>" : "";
               return '<li class="' + cls + '"><span class="punto" aria-hidden="true">' + punto + "</span>" +
-                '<span class="txt">' + esc(ev.paso) + ts + "</span></li>";
+                '<span>' + esc(ev.paso) + ts + "</span></li>";
             }).join("") + "</ol>";
           }
           out.innerHTML = html;
-        }).catch(function (err) {
-          mostrar(out, "err", "No encontramos ese código. Revisá que esté bien escrito.<br><small>" + esc(err.message) + "</small>");
+        }).catch(function () {
+          mostrar(out, "err", "No encontramos ese código. Revisalo y probá de nuevo.");
         });
       });
 
-      // =====================================================================
-      // Ayuda
-      // =====================================================================
       document.getElementById("form-ayuda").addEventListener("submit", function (e) {
         e.preventDefault();
         var out = document.getElementById("resultado-ayuda");
@@ -456,24 +420,19 @@
           albergue: document.getElementById("input-albergue").value.trim(),
           texto: document.getElementById("input-texto").value.trim()
         };
-        out.innerHTML = '<p class="status status-info" role="status">Enviando tu pedido…</p>';
-        api("/necesidades", { method: "POST", body: JSON.stringify(body) }).then(function (n) {
+        out.innerHTML = '<p class="status status-info" role="status">Enviando…</p>';
+        api("/necesidades", { method: "POST", body: JSON.stringify(body) }).then(function () {
           out.innerHTML =
-            '<div class="status status-ok" role="status"><strong>¡Listo!</strong> Recibimos tu pedido. Ya está en la lista para que alguien pueda ayudar.</div>';
+            '<div class="status status-ok" role="status"><strong>¡Listo!</strong> Recibimos tu pedido. Ya está en la lista.</div>';
           e.target.reset();
-        }).catch(function (err) {
-          mostrar(out, "err", "No se pudo enviar. Intentalo de nuevo.<br><small>" + esc(err.message) + "</small>");
+        }).catch(function () {
+          mostrar(out, "err", "No se pudo enviar. Intentalo de nuevo.");
         });
       });
 
-      // =====================================================================
-      // Ver (transparencia)
-      // =====================================================================
       function cargarVer() {
         var listaN = document.getElementById("lista-necesidades");
         var listaD = document.getElementById("lista-donaciones");
-        var stN = document.getElementById("estado-necesidades");
-        var stD = document.getElementById("estado-donaciones");
 
         api("/necesidades").then(function (data) {
           var items = Array.isArray(data) ? data : [];
@@ -481,37 +440,28 @@
           listaN.innerHTML = items.map(function (n) {
             var cubierto = Number(n.cantidad_cubierta) || 0;
             var solicitado = Number(n.cantidad_solicitada) || 0;
-            return '<li class="card">' +
-              "<h3>" + esc(n.albergue || "Albergue") + "</h3>" +
+            return '<li class="card"><h3>' + esc(n.albergue || "Albergue") + "</h3>" +
               "<p>" + esc(n.insumo_principal || n.descripcion || "") + "</p>" +
               '<div class="meta">' + badgeUrgencia(n.urgencia) +
-              (solicitado ? " · Recibió " + cubierto + " de " + solicitado : "") + "</div>" +
-            "</li>";
+              (solicitado ? " · Recibió " + cubierto + " de " + solicitado : "") + "</div></li>";
           }).join("");
-        }).catch(function (err) {
-          listaN.innerHTML = "";
-          mostrar(stN, "err", "No se pudieron cargar los pedidos.");
+        }).catch(function () {
+          listaN.innerHTML = '<li class="card"><p>No se pudieron cargar los pedidos.</p></li>';
         });
 
         api("/donaciones").then(function (data) {
           var items = Array.isArray(data) ? data : [];
           if (!items.length) { listaD.innerHTML = '<li class="card"><p>No hay donaciones por ahora.</p></li>'; return; }
           listaD.innerHTML = items.map(function (d) {
-            return '<li class="card">' +
-              "<h3>" + esc(d.donante || "Alguien") + " donó " + esc(d.item || "algo") + "</h3>" +
-              '<p>Para: ' + esc(d.albergue_asignado || "por asignar") + "</p>" +
-              '<div class="meta"><span class="badge badge-muted">' + esc(d.tracking_id || "") + "</span></div>" +
-            "</li>";
+            return '<li class="card"><h3>' + esc(d.donante || "Alguien") + " donó " + esc(d.item || "algo") + "</h3>" +
+              "<p>Para: " + esc(d.albergue_asignado || "por asignar") + "</p>" +
+              '<div class="meta"><span class="badge badge-muted">' + esc(d.tracking_id || "") + "</span></div></li>";
           }).join("");
-        }).catch(function (err) {
-          listaD.innerHTML = "";
-          mostrar(stD, "err", "No se pudieron cargar las donaciones.");
+        }).catch(function () {
+          listaD.innerHTML = '<li class="card"><p>No se pudieron cargar las donaciones.</p></li>';
         });
       }
 
-      // =====================================================================
-      // Inicio
-      // =====================================================================
       mostrarVista("vista-inicio");
     })();
   </script>
