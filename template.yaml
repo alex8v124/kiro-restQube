@@ -7,7 +7,7 @@ Description: >
 Parameters:
   TeamId:
     Type: String
-    Default: NexusLabs
+    Default: T068
     Description: Identificador exacto del equipo registrado en el portal
 
 Globals:

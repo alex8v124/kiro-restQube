@@ -12,7 +12,7 @@ try {
 }
 
 // Identificador oficial del equipo registrado en el portal
-const TEAM_ID = process.env.TEAM_ID || "NexusLabs";
+const TEAM_ID = process.env.TEAM_ID || "T068";
 
 // Base de datos en memoria para la sesión serverless de Lambda
 const DB = {
