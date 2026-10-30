@@ -353,3 +353,77 @@ def test_bedrock_respuesta_valida_no_usa_fallback(monkeypatch):
         "insumo_principal": "Suero oral",
         "fallback": False,
     }
+
+
+def _bedrock_responde(monkeypatch, salida_modelo: Any) -> None:
+    """Simula que Claude 3 Haiku devuelve `salida_modelo` (dict serializado o texto libre)."""
+    texto = salida_modelo if isinstance(salida_modelo, str) else json.dumps(salida_modelo)
+
+    class FakeClient:
+        def invoke_model(self, **kwargs: Any) -> Any:
+            return {"body": io.BytesIO(json.dumps({"content": [{"type": "text", "text": texto}]}).encode())}
+
+    monkeypatch.delenv("DISABLE_BEDROCK_LIVE", raising=False)
+    monkeypatch.setattr(app.boto3, "client", lambda **kwargs: FakeClient())
+
+
+@pytest.mark.skipif(app.boto3 is None, reason="boto3 no instalado")
+@pytest.mark.parametrize(
+    "salida",
+    [
+        {"categoria": "TRANSPORTE", "urgencia": "ALTA", "prioridad_despacho": 2, "cantidad": 5},
+        {"categoria": "AGUA_SANEAMIENTO", "urgencia": "URGENTISIMA", "prioridad_despacho": 1, "cantidad": 5},
+        '["AGUA_SANEAMIENTO", "ALTA"]',
+        "No puedo clasificar esta solicitud.",
+    ],
+)
+def test_bedrock_salida_fuera_del_contrato_usa_fallback(monkeypatch, caplog, salida):
+    _bedrock_responde(monkeypatch, salida)
+    with caplog.at_level(logging.WARNING, logger=app.logger.name):
+        result = app.clasificar_necesidad_humanitaria("Urgente agua potable, sin agua desde ayer")
+
+    assert result["fallback"] is True
+    assert result["categoria"] in app.CATEGORIAS_VALIDAS
+    assert result["urgencia"] == "CRITICA"
+    assert caplog.records, "el descarte de la salida del modelo debe quedar registrado"
+
+
+@pytest.mark.skipif(app.boto3 is None, reason="boto3 no instalado")
+def test_bedrock_salida_se_normaliza_y_corrige_rangos(monkeypatch):
+    _bedrock_responde(
+        monkeypatch,
+        {
+            "categoria": " alimentos_perecibles ",
+            "urgencia": "moderada",
+            "prioridad_despacho": 1,
+            "cantidad": 999999,
+            "insumo_principal": "",
+        },
+    )
+    result = app.clasificar_necesidad_humanitaria("Se necesitan víveres")
+
+    assert result == {
+        "categoria": "ALIMENTOS_PERECIBLES",
+        "urgencia": "MODERADA",
+        "prioridad_despacho": 3,
+        "cantidad": 50,
+        "insumo_principal": "Raciones de alimentos no perecibles",
+        "fallback": False,
+    }
+
+
+def test_kiro_hooks_bien_formados():
+    """Cada hook de .kiro/hooks es JSON válido con disparador (when) y acción (then) completos."""
+    hooks_dir = os.path.join(os.path.dirname(__file__), "..", ".kiro", "hooks")
+    archivos = sorted(f for f in os.listdir(hooks_dir) if f.endswith(".json"))
+    assert archivos
+
+    for nombre in archivos:
+        with open(os.path.join(hooks_dir, nombre), encoding="utf-8") as fh:
+            hook = json.load(fh)
+        assert hook.get("name"), nombre
+        assert hook["when"].get("event") and hook["when"].get("pattern"), nombre
+        assert hook["then"].get("action"), nombre
+        prompt = hook["then"].get("prompt", "")
+        assert 20 <= len(prompt) <= 400, f"{nombre}: prompt de {len(prompt)} caracteres"
+        assert prompt.rstrip().endswith((".", "?")), f"{nombre}: prompt parece truncado"

@@ -33,6 +33,7 @@ interface SolicitanteViewProps {
   onInspectTracking: (trackingId: string) => void;
 }
 
+// Reportes de ejemplo FICTICIOS: solicitantes identificados solo por rol, sin datos personales
 const PRESET_REPORTES = [
   {
     titulo: 'Agua Potable (ALB-PIURA-01)',

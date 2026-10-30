@@ -63,7 +63,10 @@ def _init_table() -> Any:
 TABLE: Any = _init_table()
 _MEM_BACKUP = _InMemoryFallbackTable()
 
-# Datos públicos simulados de dominio FEN (sin nombres personales reales)
+# DATOS FICTICIOS DE DEMO. Ningún registro corresponde a personas, albergues ni
+# donaciones reales: los identificadores (ALB-*, DON-*, TRK-*) son inventados y los
+# nombres de albergue, zona y donante son genéricos o topónimos públicos de Piura.
+# No contienen nombres de personas, correos, teléfonos ni documentos de identidad.
 NECESIDADES_DB: List[Dict[str, Any]] = [
     {
         "id": "ALB-PIURA-01",
@@ -211,6 +214,57 @@ def _table_scan_items(max_items: int = 100) -> List[Dict[str, Any]]:
 # Clasificador GenAI con Propósito — Amazon Bedrock Runtime (Claude 3 Haiku)
 # ============================================================================
 
+CATEGORIAS_VALIDAS = ("AGUA_SANEAMIENTO", "ALIMENTOS_PERECIBLES", "SALUD_EPIDEMIAS", "ALBERGUE_TEMPORAL")
+PRIORIDAD_POR_URGENCIA = {"CRITICA": 1, "ALTA": 2, "MODERADA": 3}
+CANTIDAD_MAXIMA = 10000
+
+
+def _validar_clasificacion(parsed: Any, insumo_defecto: str) -> Optional[Dict[str, Any]]:
+    """
+    Valida la salida del modelo contra el contrato de la spec. Devuelve None si
+    categoria o urgencia están fuera del enum (el llamador usa el fallback);
+    corrige prioridad, cantidad e insumo cuando vienen fuera de rango.
+    """
+    if not isinstance(parsed, dict):
+        logger.warning("Bedrock devolvió %s en lugar de un objeto JSON", type(parsed).__name__)
+        return None
+
+    categoria = str(parsed.get("categoria", "")).strip().upper()
+    urgencia = str(parsed.get("urgencia", "")).strip().upper()
+    if categoria not in CATEGORIAS_VALIDAS:
+        logger.warning("Bedrock devolvió categoria fuera del enum: %r", parsed.get("categoria"))
+        return None
+    if urgencia not in PRIORIDAD_POR_URGENCIA:
+        logger.warning("Bedrock devolvió urgencia fuera del enum: %r", parsed.get("urgencia"))
+        return None
+
+    # La prioridad de despacho se deriva de la urgencia para que nunca se contradigan
+    prioridad = PRIORIDAD_POR_URGENCIA[urgencia]
+    if parsed.get("prioridad_despacho") not in (prioridad, str(prioridad)):
+        logger.info("prioridad_despacho %r inconsistente con urgencia %s; se usa %d",
+                    parsed.get("prioridad_despacho"), urgencia, prioridad)
+
+    try:
+        cantidad = int(parsed.get("cantidad"))
+    except (TypeError, ValueError):
+        cantidad = 50
+    if not 1 <= cantidad <= CANTIDAD_MAXIMA:
+        logger.info("cantidad %r fuera de rango; se usa 50", parsed.get("cantidad"))
+        cantidad = 50
+
+    insumo = parsed.get("insumo_principal")
+    insumo = insumo.strip()[:120] if isinstance(insumo, str) and insumo.strip() else insumo_defecto
+
+    return {
+        "categoria": categoria,
+        "urgencia": urgencia,
+        "prioridad_despacho": prioridad,
+        "cantidad": cantidad,
+        "insumo_principal": insumo,
+        "fallback": False,
+    }
+
+
 def clasificar_necesidad_humanitaria(texto_reporte: str) -> Dict[str, Any]:
     t_lower = (texto_reporte or "").lower()
 
@@ -271,16 +325,11 @@ def clasificar_necesidad_humanitaria(texto_reporte: str) -> Dict[str, Any]:
 
             match = re.search(r"\{[\s\S]*\}", text_out)
             if match:
-                parsed = json.loads(match.group(0))
-                return {
-                    "categoria": parsed.get("categoria", fb_cat),
-                    "urgencia": parsed.get("urgencia", fb_urg),
-                    "prioridad_despacho": int(parsed.get("prioridad_despacho", fb_prio)),
-                    "cantidad": int(parsed.get("cantidad", 50)),
-                    "insumo_principal": parsed.get("insumo_principal", fb_insumo),
-                    "fallback": False,
-                }
-            logger.warning("Bedrock respondió sin JSON reconocible; se usa fallback. Respuesta: %.200s", text_out)
+                validada = _validar_clasificacion(json.loads(match.group(0)), fb_insumo)
+                if validada is not None:
+                    return validada
+            else:
+                logger.warning("Bedrock respondió sin JSON reconocible; se usa fallback. Respuesta: %.200s", text_out)
         except ClientError as exc:
             # ThrottlingException, AccessDeniedException, ValidationException, ModelTimeoutException...
             error = exc.response.get("Error", {})

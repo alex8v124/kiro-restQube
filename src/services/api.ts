@@ -116,6 +116,10 @@ function recordApiLog(entry: Omit<ApiLogEntry, 'id' | 'timestamp'>) {
 
 // ============================================================================
 // Base de Datos Local de Contingencia
+// DATOS FICTICIOS DE DEMO: ningún registro corresponde a personas, albergues ni
+// donaciones reales. Los responsables se identifican solo por rol (p. ej.
+// "Coordinadora de Albergue (simulado)"); no hay nombres de personas, correos,
+// teléfonos ni documentos. Los albergues y zonas usan topónimos públicos de Piura.
 // ============================================================================
 
 const localItemsDb: Record<string, string> = {
@@ -1076,17 +1080,24 @@ export async function apiGetDashboardMetrics(): Promise<RequestResult<DashboardM
   });
 }
 
+/**
+ * GET /asignaciones -> Matriz Donación ↔ Necesidad
+ */
 export async function apiGetAsignaciones(): Promise<RequestResult<AsignacionItem[]>> {
-  return {
-    ok: true,
+  const res = await request<AsignacionItem[]>('/asignaciones', { method: 'GET' }, () => ({
     status: 200,
     data: localAsignaciones,
-    latencyMs: 10,
-    source: 'local-fallback',
-    rawUrl: 'internal://asignaciones',
-  };
+  }));
+  // Sin asignaciones aún en el backend, se muestra la matriz simulada de demo
+  if (!Array.isArray(res.data) || res.data.length === 0) {
+    return { ...res, data: localAsignaciones };
+  }
+  return res;
 }
 
+/**
+ * POST /asignaciones -> Vincula una donación con una necesidad (HTTP 201)
+ */
 export async function apiCrearAsignacion(payload: {
   donacionId: string;
   necesidadId: string;
@@ -1094,36 +1105,36 @@ export async function apiCrearAsignacion(payload: {
   operadorLogistico: string;
   vehiculoPlaca: string;
 }): Promise<RequestResult<AsignacionItem>> {
-  const asg: AsignacionItem = {
-    id: `ASG-2026-0${localAsignaciones.length + 1}`,
-    tracking_id: 'TRK-FEN-2026',
-    donacionId: payload.donacionId,
-    necesidadId: payload.necesidadId,
-    albergueNombre: 'Albergue San Pablo (Catacaos)',
-    zona: 'Catacaos Sur',
-    recurso: 'Kits Médicos',
-    cantidad: '40 kits',
-    categoria: 'MEDICINA',
-    urgencia: 'CRITICA',
-    prioridad_despacho: 1,
-    coordinador: payload.coordinador,
-    operadorLogistico: payload.operadorLogistico,
-    vehiculoPlaca: payload.vehiculoPlaca,
-    estadoRuta: 'EN_TRANSITO',
-    puntoControlActual: 'En estiba de carga',
-    creadoEn: 'Hace instantes',
-    actualizadoEn: 'Hace instantes',
-  };
-  localAsignaciones.unshift(asg);
+  const res = await request<AsignacionItem>(
+    '/asignaciones',
+    { method: 'POST', body: JSON.stringify(payload) },
+    () => {
+      const asg: AsignacionItem = {
+        id: `ASG-2026-0${localAsignaciones.length + 1}`,
+        tracking_id: 'TRK-FEN-2026',
+        donacionId: payload.donacionId,
+        necesidadId: payload.necesidadId,
+        albergueNombre: 'Albergue San Pablo (Catacaos)',
+        zona: 'Catacaos Sur',
+        recurso: 'Kits Médicos',
+        cantidad: '40 kits',
+        categoria: 'MEDICINA',
+        urgencia: 'CRITICA',
+        prioridad_despacho: 1,
+        coordinador: payload.coordinador,
+        operadorLogistico: payload.operadorLogistico,
+        vehiculoPlaca: payload.vehiculoPlaca,
+        estadoRuta: 'EN_TRANSITO',
+        puntoControlActual: 'En estiba de carga',
+        creadoEn: 'Hace instantes',
+        actualizadoEn: 'Hace instantes',
+      };
+      localAsignaciones.unshift(asg);
+      return { status: 201, data: asg };
+    }
+  );
   notifySubscribers();
-  return {
-    ok: true,
-    status: 201,
-    data: asg,
-    latencyMs: 12,
-    source: 'local-fallback',
-    rawUrl: 'internal://asignaciones',
-  };
+  return res;
 }
 
 export function getAllTrackingIds(): string[] {

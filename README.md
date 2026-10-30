@@ -87,6 +87,7 @@ sam deploy --guided
 - **Categorías:** `AGUA_SANEAMIENTO` · `ALIMENTOS_PERECIBLES` · `SALUD_EPIDEMIAS` · `ALBERGUE_TEMPORAL`
 - **Urgencias:** `CRITICA` · `ALTA` · `MODERADA`
 - **Prioridades:** `1` (mayor) · `2` · `3`
+- **Validación de la salida del modelo:** `categoria` y `urgencia` deben pertenecer al enum (si no, se descarta la respuesta y se usa el fallback); `prioridad_despacho` se deriva de la urgencia (`CRITICA→1`, `ALTA→2`, `MODERADA→3`); `cantidad` se acota a 1–10 000 e `insumo_principal` a 120 caracteres.
 - **Fallback determinista** siempre disponible (marca `fallback: true` ante throttling o latencia). Cada fallback queda registrado en CloudWatch Logs con el código de error de Bedrock (`ThrottlingException`, `AccessDeniedException`, etc.) o el motivo del parseo fallido.
 
 ## Despliegue del frontend

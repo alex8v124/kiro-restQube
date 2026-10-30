@@ -72,6 +72,11 @@ export const CoordinadorView: React.FC<CoordinadorViewProps> = ({
         operadorLogistico,
         vehiculoPlaca,
       });
+      if (!res.ok) {
+        const detalle = (res.data as unknown as { error?: string })?.error || `HTTP ${res.status}`;
+        setAssignMessage(`No se pudo crear la asignación: ${detalle}.`);
+        return;
+      }
       setAssignMessage(
         `Asignación ${res.data.id} creada exitosamente. Tracking ${res.data.tracking_id} vinculado al albergue ${res.data.albergueNombre}.`
       );
