@@ -341,7 +341,8 @@ export async function request<T = unknown>(
   options: RequestInit = {},
   fallbackHandler?: () => Promise<{ status: number; data: T }> | { status: number; data: T }
 ): Promise<RequestResult<T>> {
-  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  const rawPath = path.startsWith('/') ? path : `/${path}`;
+  const cleanPath = rawPath.length > 1 ? rawPath.replace(/\/+$/, '') : rawPath;
   const method = ((options.method || 'GET').toUpperCase() as 'GET' | 'POST' | 'PUT' | 'OPTIONS');
   const baseUrl = currentApiUrl.replace(/\/+$/, '');
   const fullUrl = baseUrl ? `${baseUrl}${cleanPath}` : cleanPath;
@@ -594,7 +595,7 @@ export async function apiPostJob(input: string): Promise<RequestResult<JobCreate
     },
     () => {
       const jobId = `job-${Math.random().toString(16).substring(2, 10)}`;
-      const inverted = input.split('').reverse().join('');
+      const inverted = Array.from(input).reverse().join('');
       localJobsDb[jobId] = {
         status: 'done',
         output: inverted,
@@ -765,21 +766,38 @@ export async function apiClasificarNecesidadBedrock(
   textoReporte: string
 ): Promise<RequestResult<BedrockClassification>> {
   const start = performance.now();
+  const payload = JSON.stringify({
+    texto_reporte: textoReporte,
+    reporte: textoReporte,
+    texto: textoReporte,
+  });
+
+  // 1. Intentar endpoint oficial /necesidades/ia (Claude 3 Haiku Messages API)
+  // 2. Si responde 404 o no existe, recurrir a /clasificar y luego al clasificador determinista
   return request<BedrockClassification>(
-    '/clasificar',
+    '/necesidades/ia',
     {
       method: 'POST',
-      body: JSON.stringify({ texto_reporte: textoReporte }),
+      body: payload,
     },
-    () => {
-      const result = classifyReportDeterministic(textoReporte);
-      return {
-        status: 200,
-        data: {
-          ...result,
-          latencyMs: Math.max(140, Math.round(performance.now() - start)),
+    async () => {
+      return request<BedrockClassification>(
+        '/clasificar',
+        {
+          method: 'POST',
+          body: payload,
         },
-      };
+        () => {
+          const result = classifyReportDeterministic(textoReporte);
+          return {
+            status: 200,
+            data: {
+              ...result,
+              latencyMs: Math.max(140, Math.round(performance.now() - start)),
+            },
+          };
+        }
+      );
     }
   );
 }

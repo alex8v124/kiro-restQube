@@ -1,22 +1,10 @@
-# Diseño de Arquitectura y Datos — FEN Ayuda Trazable
+# Diseño Técnico y Arquitectura de Trazabilidad Humanitaria
 
-## 1. Arquitectura General Serverless
-El sistema implementa una arquitectura desacoplada orientada a eventos de emergencia para el Fenómeno El Niño (Piura y Catacaos):
+La arquitectura se fundamenta en un desacoplamiento estricto Serverless bajo la infraestructura de Amazon Web Services (AWS) para garantizar costo marginal cero en inactividad y tolerancia a picos masivos de demanda.
 
-1. **Capa de Presentación (Frontend Web React + TypeScript + Vite):**
-   - Navegación multi-rol para los 5 actores operativos (`Solicitante`, `Donante`, `Coordinador`, `Logístico`, `Administrador`) más vista pública de `Trazabilidad`.
-   - Consume la URL pública de AWS Lambda Function URL configurada mediante `VITE_API_URL` (HTTPS sin barra diagonal final).
-   - Capa de abstracción HTTP (`src/services/api.ts`) con normalización de esquemas, manejo explícito de códigos `200`, `201`, `202` y `404`, polling automático de jobs asíncronos (intervalo de 1s, timeout ≤ 12s) y consola de diagnóstico en vivo.
-
-2. **Capa de Cómputo y API (AWS Lambda Function URL — `ayuda-trazable-api`):**
-   - Único handler unificado de baja latencia con enrutamiento por `rawPath` / `path` y método HTTP.
-   - Autenticación `NONE` y cabeceras CORS globales (`Access-Control-Allow-Origin: *`) con respuesta inmediata `200 OK` a preflight `OPTIONS`.
-   - Rutas del verificador oficial: `GET /health`, `POST /items`, `GET /items`, `GET /items/{id}`, `POST /jobs`, `GET /jobs/{jobId}`.
-   - Rutas de dominio humanitario FEN: `/necesidades`, `/donaciones`, `/asignaciones`, `/entregas`, `/trazabilidad`, `/dashboard` y `/clasificar`.
-
-3. **Capa de Inteligencia Artificial (Amazon Bedrock Runtime):**
-   - Integración directa mediante SDK nativo (`boto3` / `@aws-sdk/client-bedrock-runtime`) invocando `anthropic.claude-3-haiku-20240307-v1:0` en `us-east-1`.
-   - Prompt estructurado del Centro de Operaciones FEN Piura que fuerza salida exclusivamente en formato JSON con campos `categoria`, `urgencia` y `prioridad_despacho`, respaldado por un clasificador determinista de contingencia (`fallback: true`).
-
-4. **Modelo de Datos y Estado:**
-   - Almacenamiento rápido en memoria y soporte para persistencia en Amazon DynamoDB para garantizar consistencia entre invocaciones concurrentes de Lambda.
+## Componentes y Flujo de Datos
+- **Capa Perimetral (Ingress):** Enrutamiento mediante AWS Lambda Function URLs con políticas CORS globales habilitadas para clientes web móviles y respuestas 200 OK a solicitudes preflight `OPTIONS`. Normalización estricta de rutas eliminando trailing slashes (`/health/` → `/health`).
+- **Motor de Cómputo:** Funciones AWS Lambda ejecutando lógica determinista de emparejamiento entre requerimientos de albergues y lotes de donación registrados, cruzando por categoría humanitaria (`AGUA_SANEAMIENTO`, `ALIMENTOS_PERECIBLES`, `SALUD_EPIDEMIAS`, `ALBERGUE_TEMPORAL`) y orden de prioridad (`CRITICA` → `ALTA` → `MODERADA`).
+- **Inferencia Generativa:** Amazon Bedrock Runtime procesando reportes de campo no estructurados a través del modelo `anthropic.claude-3-haiku-20240307-v1:0` en el endpoint `/necesidades/ia` usando la Messages API oficial para convertirlos en entidades estructuradas con `categoria`, `urgencia` y `prioridad_despacho`. Respaldado por clasificador determinista de contingencia.
+- **Capa de Presentación:** Aplicación Web React + TypeScript + Vite con diseño temático de Centro de Operaciones FEN (Piura y Catacaos) con 5 roles especializados más trazabilidad pública por `tracking_id`.
+- **Insignias y Verificador Oficial:** Soporte nativo y validación de las 3 insignias automáticas: `GET /health` (+20 Pts), `POST /items` y `GET /items` (+25 Pts), y `POST /jobs` asíncrono con polling a `GET /jobs/{jobId}` e inversión algorítmica Unicode segura (+35 Pts).

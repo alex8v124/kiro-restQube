@@ -1,0 +1,11 @@
+{
+  "name": "Audit",
+  "when": {
+    "event": "file_saved",
+    "pattern": "**/*"
+  },
+  "then": {
+    "action": "validate_syntax",
+    "prompt": "Mapea las 3 insignias automáticas (/health, /items, /jobs) para asegurar los 80 puntos iniciales. Implementa Amazon Bedrock con Claude 3 Haiku en /necesidades/ia usando la Messages API oficial para ganar los 40 puntos de GenAI. Normaliza las rutas eliminando trailing slashes (/health/ -> /health) y procesa inversión Unicode segura en /jobs. Incorpora GET /donaciones para que Daniel liste los envíos en el panel logístico. Empareja por categoría y prioridad (CRITICA -> ALTA -> MEDIA) para que agua se asigne a agua y medicinas a medicinas. Sube este archivo directo a tu función Lambda (ayuda-trazable-api)."
+  }
+}

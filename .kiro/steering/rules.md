@@ -1,0 +1,8 @@
+# Directrices de Gobernanza Técnica para Ayuda Humanitaria FEN
+
+1. **Encabezados CORS y Códigos HTTP Canónicos:** Todas las respuestas de la API deben retornar encabezados CORS permisivos (`Access-Control-Allow-Origin: *`, `Access-Control-Allow-Headers: *`, `Access-Control-Allow-Methods: GET, POST, OPTIONS`) y código de estado HTTP canónico: `200` (OK), `201` (Created), `202` (Accepted), y `404` (Not Found).
+2. **Esquemas JSON Planos y Baja Latencia:** Los esquemas JSON no deben contener estructuras anidadas innecesarias para mantener la latencia por debajo de los 100 milisegundos en conexiones móviles lentas y responder al evaluador antes del timeout de 12 segundos.
+3. **Seguridad y Cero Credenciales en Código:** Se prohíbe estrictamente el uso de credenciales privadas, secretos o llaves de API fijas en código fuente; las autorizaciones hacia servicios externos de AWS (incluyendo Amazon Bedrock Runtime y Amazon DynamoDB) deben resolverse exclusivamente mediante políticas de roles nativos de AWS IAM (`bedrock:InvokeModel`).
+4. **Normalización de Rutas sin Trailing Slashes:** Toda ruta debe normalizarse eliminando barras diagonales finales (`/health/` → `/health`, `/items/` → `/items`, `/jobs/` → `/jobs`) para evitar redirecciones HTTP 301/308 o fallos de matching.
+5. **Inversión Unicode Segura:** El procesamiento asíncrono de `/jobs` debe realizar inversión algorítmica segura de cadenas preservando caracteres multibyte y no-ASCII.
+6. **Emparejamiento Inteligente Humanitario:** La asignación logística debe emparejar estrictamente por categoría y orden de prioridad (`CRITICA` → `ALTA` → `MODERADA` / `P1` → `P2` → `P3`), asignando donaciones de agua a necesidades de agua y medicamentos a salud/epidemias.

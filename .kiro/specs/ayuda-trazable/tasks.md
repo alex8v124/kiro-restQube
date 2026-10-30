@@ -1,18 +1,27 @@
-# Plan de Ingeniería y Desglose Secuencial de Tareas — FEN Ayuda Trazable
+# Plan de Implementación y Tareas de Ingeniería — FEN Ayuda Trazable
 
-## Fase 1: Especificación Kiro y Contratos de Verificación (+30 Pts Maestría Kiro)
-- [x] **TASK-101:** Definir requisitos funcionales y no funcionales en `.kiro/specs/ayuda-trazable/requirements.md` empleando sintaxis formal EARS (>300 caracteres).
-- [x] **TASK-102:** Documentar la arquitectura serverless, modelo de datos y contratos HTTP en `.kiro/specs/ayuda-trazable/design.md` (>300 caracteres).
-- [x] **TASK-103:** Configurar directrices de seguridad, códigos HTTP canónicos (200, 201, 202) y política IAM sin credenciales fijas en `.kiro/steering/fen-rules.md` (>200 caracteres).
-- [x] **TASK-104:** Implementar hooks automatizados de auditoría de sintaxis y esquemas JSON en `.kiro/hooks/auto-audit.json` con llaves `when` y `then`.
+Lista secuencial de tareas operativas para la entrega del producto mínimo viable en la hackatón:
 
-## Fase 2: Desarrollo del Frontend Multi-Rol e Inspector de Insignias
-- [x] **TASK-201:** Construir la capa de cliente HTTP `src/services/api.ts` leyendo `VITE_API_URL` sin barra final, con soporte de códigos 200/201/202/404, telemetría de latencia y compatibilidad entre variantes de handlers.
-- [x] **TASK-202:** Implementar módulo **Solicitante** con formulario de reporte de albergues (Piura / Catacaos) y visualización de la clasificación de Amazon Bedrock (`categoria`, `urgencia`, `prioridad_despacho`).
-- [x] **TASK-203:** Implementar módulo **Donante** con catálogo de necesidades priorizadas, registro de aportes y generación de código de rastreo `tracking_id` (`TRK-FEN-2026`).
-- [x] **TASK-204:** Implementar módulos **Coordinador** y **Logístico** para asignación inteligente `donación → necesidad` y control de despacho en ruta (`REGISTRADO` → `ASIGNADO` → `EN_RUTA` → `ENTREGADO`).
-- [x] **TASK-205:** Implementar vista pública de **Trazabilidad** por `tracking_id` y **Panel de Administrador** con Dashboard operativo y consola interactiva de certificación para probar en vivo `GET /health` (+20), `/items` (+25) y `/jobs` (+35).
+## Fase 1: Endpoints Base e Integración de Insignias Automáticas (+80 Puntos Iniciales)
+- [x] **1.0** Configuración de endpoints base de integración en Kiro IDE con ruteo HTTP determinista y normalización de rutas sin trailing slashes (`/health/` → `/health`).
+- [x] **1.1** Implementación del health check `GET /health` exponiendo el identificador de equipo en JSON plano (`{"status": "ok", "team": "NexusLabs"}`) [+20 Pts].
+- [x] **1.2** Construcción del repositorio de persistencia para `/items` con soporte de identificadores nonce (`POST /items` [201], `GET /items/{id}` [200], `GET /items` [200]) [+25 Pts].
+- [x] **1.3** Desarrollo del manejador de tareas asíncronas `/jobs` con inversión algorítmica de cadenas Unicode segura y respuesta `202 Accepted` (`POST /jobs`, polling `GET /jobs/{jobId}`) [+35 Pts].
 
-## Fase 3: Backend Unificado AWS Lambda y Amazon Bedrock (+120 Pts Operativos)
-- [ ] **TASK-301:** Unificar en un solo handler de AWS Lambda los endpoints de evaluación (`/health`, `/items`, `/jobs`) junto con las rutas de dominio FEN (`/necesidades`, `/donaciones`, `/asignaciones`, `/entregas`, `/trazabilidad`, `/dashboard`).
-- [ ] **TASK-302:** Integrar Amazon Bedrock Runtime (`anthropic.claude-3-haiku-20240307-v1:0`) con rol IAM `bedrock:InvokeModel` y fallback determinista de alta disponibilidad.
+## Fase 2: Inteligencia Artificial Generativa y Clasificación de Emergencia (+40 Puntos GenAI)
+- [x] **2.0** Integración del cliente Bedrock Runtime consumiendo modelos fundacionales (`anthropic.claude-3-haiku-20240307-v1:0`) en `/necesidades/ia` usando la Messages API oficial para clasificar en `categoria`, `urgencia` y `prioridad_despacho` [+40 Pts].
+- [x] **2.1** Implementación de clasificador de contingencia determinista de alta disponibilidad ante cortes o picos de latencia en zonas de emergencia.
+
+## Fase 3: Frontend Humanitario Multi-Rol y Consola de Evaluación
+- [x] **3.1** Desarrollo de capa cliente HTTP resiliente en `src/services/api.ts` con modo híbrido, telemetría y consola de logs.
+- [x] **3.2** Módulo **Solicitante:** Portal de albergues Piura y Catacaos con entrada de texto libre y escáner Bedrock en vivo.
+- [x] **3.3** Módulo **Donante:** Catálogo de necesidades y emisión de recibo digital con código `tracking_id` (`TRK-FEN-2026`).
+- [x] **3.4** Módulo **Coordinador:** Mesa de cruce inteligente Donación → Necesidad emparejando por categoría y orden de prioridad (`CRITICA` → `ALTA` → `MODERADA`).
+- [x] **3.5** Módulo **Logístico:** Tablero de despacho para operadores con pipeline visual de 4 etapas (`REGISTRADO` → `ASIGNADO` → `EN_RUTA` → `ENTREGADO`) y listado `GET /donaciones`.
+- [x] **3.6** Módulo **Trazabilidad:** Consulta pública por `tracking_id` con línea de tiempo auditada y nodo activo en tiempo real.
+- [x] **3.7** Módulo **Administrador:** Dashboard operativo con métricas ejecutivas y certificador pre-portal de las 5 insignias (150 Pts).
+
+## Fase 4: Despliegue y Enlace Final
+- [ ] **4.1** Despliegue de la interfaz de usuario en Vercel / AWS CloudFront + S3.
+- [ ] **4.2** Enlace directo con AWS Lambda Function URL (`ayuda-trazable-api`) sin trailing slashes.
+- [ ] **4.3** Ejecución del verificador automatizado y validación final de 150 puntos.
