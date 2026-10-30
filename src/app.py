@@ -430,8 +430,6 @@ def lambda_handler(event: Dict[str, Any], context: Any = None) -> Dict[str, Any]
             {
                 "status": "ok",
                 "team": team_val,
-                "service": "Ayuda Trazable FEN API",
-                "mensaje": "API Ayuda Trazable activa",
             },
             headers,
         )

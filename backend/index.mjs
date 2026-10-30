@@ -158,8 +158,6 @@ export const handler = async (event) => {
       body: JSON.stringify({
         status: "ok",
         team: TEAM_ID,
-        service: "Ayuda Trazable FEN API",
-        mensaje: "API Ayuda Trazable activa",
       }),
     };
   }

@@ -8,6 +8,7 @@ import {
   DashboardMetrics,
   DonacionItem,
   EstadoTrazabilidad,
+  EventoTrazabilidad,
   HealthResponse,
   JobCreateResponse,
   JobStatusResponse,
@@ -924,7 +925,7 @@ export async function apiGetTrazabilidad(
 ): Promise<RequestResult<TrazabilidadDetalle>> {
   const cleanId = trackingId.trim().toUpperCase();
 
-  return request<TrazabilidadDetalle>(
+  const res = await request<any>(
     `/trazabilidad/${encodeURIComponent(cleanId)}`,
     { method: 'GET' },
     () => {
@@ -955,7 +956,7 @@ export async function apiGetTrazabilidad(
         eventos: [
           {
             etapa: 'REGISTRADO',
-            titulo: '1. Donación Registrada y Auditada',
+            titulo: '1. Donación Registrada',
             descripcion: `Aporte registrado por ${donacion.donanteNombre}: ${donacion.cantidad}.`,
             ubicacion: 'Centro de Acopio Central Piura',
             responsable: donacion.donanteNombre,
@@ -966,7 +967,7 @@ export async function apiGetTrazabilidad(
           },
           {
             etapa: 'EN_RUTA',
-            titulo: '2. Emparejado por Prioridad Vital (Bedrock)',
+            titulo: '2. Asignado por Prioridad Vital',
             descripcion: `Asignado prioritariamente a ${donacion.albergue_asignado || 'Albergue San Pablo'}.`,
             ubicacion: 'COER Piura',
             responsable: 'Oficial de Logística COER',
@@ -1007,6 +1008,120 @@ export async function apiGetTrazabilidad(
       return { status: 200, data: detalle };
     }
   );
+
+  // Normalizar datos recibidos (desde live Lambda o local fallback)
+  const raw = (res.data || {}) as Record<string, any>;
+  const localMatch = localDonaciones.find((d) => d.tracking_id.toUpperCase() === cleanId);
+  const rawEstado = (raw.estadoActual || raw.estado || localMatch?.estado || 'EN_TRANSITO').toUpperCase();
+  const estado: EstadoTrazabilidad =
+    rawEstado === 'ENTREGADO'
+      ? 'ENTREGADO'
+      : rawEstado === 'EN_RUTA'
+        ? 'EN_RUTA'
+        : rawEstado === 'REGISTRADO'
+          ? 'REGISTRADO'
+          : 'EN_TRANSITO';
+
+  const isTransito = estado === 'EN_TRANSITO' || estado === 'EN_RUTA';
+  const isEntregado = estado === 'ENTREGADO';
+  const isAsignado = isTransito || isEntregado;
+
+  const catVal = (raw.clasificacionBedrock?.categoria || raw.categoria || localMatch?.categoria || 'MEDICINA') as BedrockCategoria;
+  const urgVal = (raw.clasificacionBedrock?.urgencia || 'CRITICA') as BedrockUrgencia;
+  const prioVal = (raw.clasificacionBedrock?.prioridad_despacho || 1) as PrioridadDespacho;
+
+  let eventos: EventoTrazabilidad[] = [];
+  if (Array.isArray(raw.eventos) && raw.eventos.length > 0) {
+    eventos = raw.eventos;
+  } else if (Array.isArray(raw.linea_tiempo) && raw.linea_tiempo.length > 0) {
+    const etapas: EstadoTrazabilidad[] = ['REGISTRADO', 'EN_RUTA', 'EN_TRANSITO', 'ENTREGADO'];
+    eventos = raw.linea_tiempo.map((lt: any, idx: number) => {
+      const et = etapas[idx] || 'EN_TRANSITO';
+      const isUltimoCompletado = Boolean(lt.completado) && (idx === raw.linea_tiempo.length - 1 || !raw.linea_tiempo[idx + 1]?.completado);
+      return {
+        etapa: et,
+        titulo: `${idx + 1}. ${lt.paso?.split(' con ')[0]?.split(' por ')[0] || 'Etapa ' + (idx + 1)}`,
+        descripcion: lt.paso || 'Paso logístico',
+        ubicacion: idx === 0 ? 'Centro de Acopio Piura' : idx === 1 ? 'COER Piura' : idx === 2 ? 'Puente Independencia' : (raw.albergue_asignado || 'Albergue Destino'),
+        responsable: idx === 0 ? (raw.donante || 'Donante') : idx === 1 ? 'Logística COER' : idx === 2 ? 'Brigada Alfa-02' : 'Comité Albergue',
+        timestamp: lt.timestamp ? new Date(lt.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (lt.completado ? 'Hoy' : 'Pendiente'),
+        completado: Boolean(lt.completado),
+        activo: isUltimoCompletado,
+        hashVerificacion: `0x${Math.floor(1000 + idx * 777).toString(16)}...${Math.floor(8000 + idx * 555).toString(16)}`,
+      };
+    });
+  } else {
+    eventos = [
+      {
+        etapa: 'REGISTRADO',
+        titulo: '1. Donación Registrada',
+        descripcion: `Aporte registrado por ${raw.donante || 'Donante Solidario'}.`,
+        ubicacion: 'Centro de Acopio Piura',
+        responsable: raw.donante || 'Donante',
+        timestamp: 'Hoy',
+        completado: true,
+        activo: estado === 'REGISTRADO',
+        hashVerificacion: '0x8f4a...c91e',
+      },
+      {
+        etapa: 'EN_RUTA',
+        titulo: '2. Asignado a Albergue',
+        descripcion: `Destinado prioritariamente a ${raw.albergue_asignado || raw.albergueDestino || 'Albergue Temporal'}.`,
+        ubicacion: 'COER Piura',
+        responsable: 'Logística COER',
+        timestamp: 'Hoy',
+        completado: isAsignado,
+        activo: isTransito && !isEntregado,
+        hashVerificacion: '0x3d92...71b0',
+      },
+      {
+        etapa: 'EN_TRANSITO',
+        titulo: '3. En Ruta Terrestre',
+        descripcion: 'Vehículo en trayecto hacia el albergue de destino.',
+        ubicacion: 'Corredor Humanitario Piura-Catacaos',
+        responsable: 'Brigada Logística',
+        timestamp: isTransito || isEntregado ? 'Hoy' : 'Pendiente',
+        completado: isTransito || isEntregado,
+        activo: isTransito,
+        hashVerificacion: '0xa71c...44e8',
+      },
+      {
+        etapa: 'ENTREGADO',
+        titulo: '4. Entrega en Albergue',
+        descripcion: isEntregado ? 'Recepcionado y validado en el albergue.' : 'Pendiente de entrega final.',
+        ubicacion: raw.albergue_asignado || raw.albergueDestino || 'Albergue Destino',
+        responsable: 'Coordinador del Albergue',
+        timestamp: isEntregado ? 'Hoy' : 'Pendiente',
+        completado: isEntregado,
+        activo: isEntregado,
+        hashVerificacion: '0xf19b...02d4',
+      },
+    ];
+  }
+
+  const normalizedDetalle: TrazabilidadDetalle = {
+    tracking_id: raw.tracking_id || cleanId,
+    estadoActual: estado,
+    donante: raw.donante || localMatch?.donanteNombre || 'Donante Solidario',
+    recurso: raw.recurso || raw.item || raw.descripcion || localMatch?.descripcion || 'Insumos de Emergencia',
+    cantidad: typeof raw.cantidad === 'number' ? `${raw.cantidad} unidades` : (raw.cantidad || localMatch?.cantidad || '1 unidad'),
+    albergueDestino: raw.albergueDestino || raw.albergue_asignado || localMatch?.albergue_asignado || 'Albergue Catacaos',
+    zona: raw.zona || localMatch?.zonaDestino || 'Catacaos Sur',
+    clasificacionBedrock: {
+      categoria: catVal,
+      urgencia: urgVal,
+      prioridad_despacho: prioVal,
+      modelId: 'anthropic.claude-3-haiku-20240307-v1:0',
+    },
+    operadorLogistico: raw.operadorLogistico || 'Brigada INDECI Alfa-02',
+    vehiculo: raw.vehiculo || 'EGF-842 (Camión 4x4)',
+    eventos,
+  };
+
+  return {
+    ...res,
+    data: normalizedDetalle,
+  };
 }
 
 /**

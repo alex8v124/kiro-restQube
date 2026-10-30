@@ -8,15 +8,15 @@ import {
   UrgenciaBadge,
 } from '../ui/Badges';
 import {
-  CheckCircle2,
   Clock,
   Compass,
-  Cpu,
   Hash,
+  HeartHandshake,
   Loader2,
   MapPin,
   Search,
   ShieldCheck,
+  Sparkles,
   Truck,
   UserCheck,
 } from 'lucide-react';
@@ -31,26 +31,33 @@ export const TrazabilidadView: React.FC<TrazabilidadViewProps> = ({
   const [searchId, setSearchId] = useState(initialTrackingId || 'TRK-FEN-2026');
   const [detalle, setDetalle] = useState<TrazabilidadDetalle | null>(null);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const availableIds = getAllTrackingIds();
 
   const loadTracking = async (idToFetch: string) => {
+    if (!idToFetch || !idToFetch.trim()) return;
     setLoading(true);
+    setErrorMsg(null);
     try {
-      const res = await apiGetTrazabilidad(idToFetch);
-      setDetalle(res.data);
+      const res = await apiGetTrazabilidad(idToFetch.trim());
+      if (res && res.data) {
+        setDetalle(res.data);
+      } else {
+        setErrorMsg('No se encontró información para el código ingresado.');
+      }
+    } catch (err) {
+      console.error('Error al cargar trazabilidad:', err);
+      setErrorMsg('No se pudo cargar el recorrido en este momento. Intenta nuevamente.');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (initialTrackingId) {
-      setSearchId(initialTrackingId);
-      loadTracking(initialTrackingId);
-    } else {
-      loadTracking('TRK-FEN-2026');
-    }
+    const idToUse = initialTrackingId || 'TRK-FEN-2026';
+    setSearchId(idToUse);
+    loadTracking(idToUse);
   }, [initialTrackingId]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -61,20 +68,21 @@ export const TrazabilidadView: React.FC<TrazabilidadViewProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Buscador superior de tracking_id */}
-      <div className="kiro-card rounded-2xl p-6 border border-[#b080ff]/35">
+      {/* Buscador superior accesible y amigable */}
+      <div className="kiro-card rounded-2xl p-6 border border-[#b080ff]/25 shadow-lg">
         <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/10">
           <div>
-            <span className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#80ffb5]">
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-[#80ffb5]">
               <Compass className="w-3.5 h-3.5" />
-              Vista Común de Auditoría Ciudadana • /trazabilidad
+              Seguimiento y Transparencia
             </span>
             <h2 className="text-xl font-bold text-white mt-0.5">
-              Rastreador en Tiempo Real por Código <code className="text-[#80ffb5]">tracking_id</code>
+              Rastreo de Ayuda Humanitaria en Tiempo Real
             </h2>
           </div>
-          <span className="px-2.5 py-1 rounded-lg bg-[#80ffb5]/15 border border-[#80ffb5]/30 text-xs font-mono text-[#80ffb5]">
-            GET /trazabilidad
+          <span className="px-3 py-1 rounded-full bg-[#80ffb5]/10 border border-[#80ffb5]/30 text-xs font-medium text-[#80ffb5] flex items-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Custodia Verificada
           </span>
         </div>
 
@@ -85,23 +93,23 @@ export const TrazabilidadView: React.FC<TrazabilidadViewProps> = ({
               type="text"
               value={searchId}
               onChange={(e) => setSearchId(e.target.value)}
-              placeholder="Ingresa tu tracking_id (ej. TRK-FEN-2026)"
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#110e17] border border-[#b080ff]/35 text-sm font-mono text-white focus:outline-none focus:border-[#80ffb5]"
+              placeholder="Ingresa tu código de seguimiento (ej. TRK-FEN-2026)"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#110e17] border border-[#b080ff]/35 text-sm font-sans text-white focus:outline-none focus:border-[#80ffb5] transition"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="kiro-glow-btn px-6 py-2.5 rounded-xl text-xs font-mono font-semibold text-white flex items-center justify-center gap-2 cursor-pointer"
+            className="kiro-glow-btn px-6 py-2.5 rounded-xl text-xs font-semibold text-white flex items-center justify-center gap-2 cursor-pointer transition"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-            Consultar Cadena de Custodia
+            Rastrear Envío
           </button>
         </form>
 
-        {/* Chips de códigos activos para demostración */}
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="text-xs font-mono text-[#a59bb8]">Códigos activos en Piura / Catacaos:</span>
+        {/* Códigos activos de fácil acceso */}
+        <div className="mt-3.5 flex flex-wrap items-center gap-2">
+          <span className="text-xs text-[#a59bb8]">Envíos recientes:</span>
           {availableIds.map((id) => (
             <button
               key={id}
@@ -122,93 +130,117 @@ export const TrazabilidadView: React.FC<TrazabilidadViewProps> = ({
         </div>
       </div>
 
-      {/* Resultado de Trazabilidad y Línea de Tiempo de 4 Etapas */}
+      {/* Mensaje de error amigable */}
+      {errorMsg && (
+        <div className="kiro-card rounded-2xl p-6 text-center text-[#ff9e9e] border border-red-500/30">
+          <p className="text-sm">{errorMsg}</p>
+        </div>
+      )}
+
+      {/* Estado cargando */}
+      {loading && !detalle && (
+        <div className="kiro-card rounded-2xl p-12 flex flex-col items-center justify-center gap-3">
+          <Loader2 className="w-8 h-8 animate-spin text-[#80ffb5]" />
+          <p className="text-sm text-[#a59bb8]">Consultando trayecto en tiempo real...</p>
+        </div>
+      )}
+
+      {/* Resultado de Trazabilidad */}
       {detalle && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Resumen del Envío y Clasificación Bedrock (4 cols) */}
+          {/* Tarjeta de Resumen del Envío (4 columnas) */}
           <div className="lg:col-span-4 kiro-card rounded-2xl p-6 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <div>
-                <div className="text-[11px] font-mono uppercase text-[#9589ab]">
-                  Código Auditado
+                <div className="text-[11px] font-medium uppercase text-[#9589ab]">
+                  Código de Envío
                 </div>
                 <div className="text-lg font-mono font-bold text-[#80ffb5]">
                   {detalle.tracking_id}
                 </div>
               </div>
-              <EstadoTrazabilidadBadge estado={detalle.estadoActual} />
+              <EstadoTrazabilidadBadge estado={detalle.estadoActual || 'EN_TRANSITO'} />
             </div>
 
             <div className="space-y-3 text-xs">
               <div className="p-3 rounded-xl bg-[#13101c] border border-white/10">
-                <div className="text-[#9589ab] font-mono uppercase text-[10px]">
+                <div className="text-[#9589ab] font-medium uppercase text-[10px] flex items-center gap-1.5">
+                  <HeartHandshake className="w-3.5 h-3.5 text-[#80ffb5]" />
                   Donante Registrado
                 </div>
-                <div className="text-white font-semibold mt-0.5">{detalle.donante}</div>
+                <div className="text-white font-semibold mt-1">
+                  {detalle.donante || 'Donante Solidario'}
+                </div>
               </div>
 
               <div className="p-3 rounded-xl bg-[#13101c] border border-white/10">
-                <div className="text-[#9589ab] font-mono uppercase text-[10px]">
-                  Recurso &amp; Volumen
+                <div className="text-[#9589ab] font-medium uppercase text-[10px]">
+                  Recurso &amp; Cantidad
                 </div>
-                <div className="text-white font-semibold mt-0.5">{detalle.recurso}</div>
-                <div className="text-[#80ffb5] font-mono mt-0.5">{detalle.cantidad}</div>
+                <div className="text-white font-semibold mt-1">
+                  {detalle.recurso || 'Insumos de Emergencia'}
+                </div>
+                <div className="text-[#80ffb5] font-semibold mt-0.5">
+                  {detalle.cantidad || '1 unidad'}
+                </div>
               </div>
 
               <div className="p-3 rounded-xl bg-[#13101c] border border-white/10">
-                <div className="text-[#9589ab] font-mono uppercase text-[10px]">
-                  Albergue &amp; Zona Destino
+                <div className="text-[#9589ab] font-medium uppercase text-[10px]">
+                  Albergue &amp; Destino
                 </div>
-                <div className="text-white font-semibold mt-0.5">{detalle.albergueDestino}</div>
+                <div className="text-white font-semibold mt-1">
+                  {detalle.albergueDestino || 'Albergue en Piura / Catacaos'}
+                </div>
                 <div className="text-[#b080ff] flex items-center gap-1 mt-0.5">
                   <MapPin className="w-3.5 h-3.5" />
-                  {detalle.zona}
+                  {detalle.zona || 'Catacaos Sur'}
                 </div>
               </div>
 
               <div className="p-3 rounded-xl bg-[#13101c] border border-[#b080ff]/25 space-y-2">
-                <div className="text-[#e2d3fe] font-mono uppercase text-[10px] flex items-center gap-1.5">
-                  <Cpu className="w-3.5 h-3.5 text-[#b080ff]" />
-                  Priorización Amazon Bedrock Asociada
+                <div className="text-[#e2d3fe] font-medium uppercase text-[10px] flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-[#b080ff]" />
+                  Prioridad del Envío
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  <CategoriaBadge categoria={detalle.clasificacionBedrock.categoria} />
-                  <UrgenciaBadge urgencia={detalle.clasificacionBedrock.urgencia} />
-                  <PrioridadBadge prioridad={detalle.clasificacionBedrock.prioridad_despacho} />
+                  <CategoriaBadge categoria={detalle.clasificacionBedrock?.categoria || 'MEDICINA'} />
+                  <UrgenciaBadge urgencia={detalle.clasificacionBedrock?.urgencia || 'CRITICA'} />
+                  <PrioridadBadge prioridad={detalle.clasificacionBedrock?.prioridad_despacho || 1} />
                 </div>
               </div>
 
               <div className="p-3 rounded-xl bg-[#13101c] border border-white/10 space-y-1">
-                <div className="text-[#9589ab] font-mono uppercase text-[10px]">
-                  Convoy &amp; Operador Logístico
+                <div className="text-[#9589ab] font-medium uppercase text-[10px]">
+                  Transporte &amp; Responsable
                 </div>
-                <div className="text-[#80f4ff] font-mono flex items-center gap-1.5">
+                <div className="text-[#80f4ff] flex items-center gap-1.5 font-medium">
                   <Truck className="w-3.5 h-3.5" />
-                  {detalle.vehiculo}
+                  {detalle.vehiculo || 'Camión de Apoyo Humanitario'}
                 </div>
-                <div className="text-[#c4b8db]">{detalle.operadorLogistico}</div>
+                <div className="text-[#c4b8db]">{detalle.operadorLogistico || 'Brigada INDECI / COER'}</div>
               </div>
             </div>
           </div>
 
-          {/* Línea de Tiempo de 4 Etapas (8 cols) */}
+          {/* Línea de Tiempo del Recorrido (8 columnas) */}
           <div className="lg:col-span-8 kiro-card rounded-2xl p-6">
             <div className="flex items-center justify-between pb-4 border-b border-white/10">
               <div>
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
                   <ShieldCheck className="w-5 h-5 text-[#80ffb5]" />
-                  Línea de Tiempo de Custodia Humanitaria (4 Etapas)
+                  Recorrido y Custodia de la Ayuda
                 </h3>
-                <p className="text-xs text-[#a59bb8]">
-                  Donación registrada → Asignada → En ruta → Entregada en Albergue
+                <p className="text-xs text-[#a59bb8] mt-0.5">
+                  Recepción de donación → Asignación a albergue → En camino → Entrega final
                 </p>
               </div>
             </div>
 
             <div className="mt-6 relative pl-6 border-l-2 border-[#b080ff]/30 space-y-6">
-              {detalle.eventos.map((ev) => (
-                <div key={ev.etapa} className="relative">
-                  {/* Nodo circular con pulso activo */}
+              {(detalle.eventos || []).map((ev, idx) => (
+                <div key={ev.etapa || idx} className="relative">
+                  {/* Nodo circular con indicador activo */}
                   <span
                     className={`absolute -left-[33px] top-1 w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                       ev.activo
@@ -236,13 +268,13 @@ export const TrazabilidadView: React.FC<TrazabilidadViewProps> = ({
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-bold text-white">{ev.titulo}</span>
                         {ev.activo && (
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#80f4ff]/20 text-[#80f4ff] border border-[#80f4ff]/40 shadow-sm flex items-center gap-1">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#80f4ff]/20 text-[#80f4ff] border border-[#80f4ff]/40 shadow-sm flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#80f4ff] animate-pulse" />
-                            ETAPA ACTUAL
+                            EN CURSO
                           </span>
                         )}
                       </div>
-                      <span className="font-mono text-xs text-[#a59bb8] flex items-center gap-1">
+                      <span className="text-xs text-[#a59bb8] flex items-center gap-1">
                         <Clock className="w-3.5 h-3.5 text-[#b080ff]" />
                         {ev.timestamp}
                       </span>
@@ -252,7 +284,7 @@ export const TrazabilidadView: React.FC<TrazabilidadViewProps> = ({
                       {ev.descripcion}
                     </p>
 
-                    <div className="mt-3 pt-2.5 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-[#a59bb8]">
+                    <div className="mt-3 pt-2.5 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#a59bb8]">
                       <span className="flex items-center gap-1">
                         <MapPin className="w-3.5 h-3.5 text-[#80f4ff]" />
                         {ev.ubicacion}
@@ -261,7 +293,7 @@ export const TrazabilidadView: React.FC<TrazabilidadViewProps> = ({
                         <UserCheck className="w-3.5 h-3.5 text-[#80ffb5]" />
                         {ev.responsable}
                       </span>
-                      <span className="flex items-center gap-1 text-[#e2d3fe]">
+                      <span className="flex items-center gap-1 text-[#e2d3fe] font-mono text-[10px]">
                         <Hash className="w-3 h-3" />
                         {ev.hashVerificacion}
                       </span>

@@ -27,7 +27,9 @@ pnpm-debug.log*
 # NOTA IMPORTANTE: La carpeta .kiro/ NO se ignora porque es auditada por el
 # evaluador estático para la insignia Maestría Kiro (+30 pts).
 
-# Python
+# Python cache & env
 __pycache__/
+*.py[cod]
+*$py.class
 .venv/
 .pytest_cache/
