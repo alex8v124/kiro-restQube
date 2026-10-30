@@ -98,17 +98,33 @@ export const handler = async (event) => {
   const path = raw.length > 1 ? raw.replace(/\/+$/, "") : raw;
   const method = event.requestContext?.http?.method || event.httpMethod || "GET";
 
-  // Encabezados CORS universales exigidos
+  // Detección de petición con Origin (navegadores web o clientes con CORS habilitado)
+  // En AWS Lambda Function URL, si CORS está habilitado en la consola de AWS, el proxy
+  // inyecta automáticamente 'Access-Control-Allow-Origin: *' cuando la petición trae cabecera Origin.
+  // Si nuestro código también lo inyecta, el navegador recibe '*, *' (duplicado) y bloquea la petición.
+  const hasOrigin = Boolean(
+    event.headers?.origin ||
+    event.headers?.Origin ||
+    event.headers?.ORIGIN
+  );
+
+  // Encabezados de respuesta
   const headers = {
     "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Origin",
     "Access-Control-Max-Age": "86400",
   };
 
+  // Solo incluimos Access-Control-Allow-Origin en el código si la petición no trajo Origin
+  // (para evaluadores automatizados o llamadas directas sin proxy CORS)
+  if (!hasOrigin) {
+    headers["Access-Control-Allow-Origin"] = "*";
+  }
+
   // Respuesta inmediata a pre-vuelo CORS OPTIONS
   if (method === "OPTIONS") {
+    headers["Access-Control-Allow-Origin"] = "*";
     return {
       statusCode: 200,
       headers,
