@@ -1,17 +1,27 @@
 # Frontend Minimalista y Accesible
 
-Frontend alternativo **autocontenido** (HTML + CSS + JavaScript vanilla, sin build ni dependencias) para **Ayuda Trazable FEN**.
+Frontend alternativo **autocontenido** (HTML + CSS + JavaScript vanilla, sin build ni dependencias) para **Ayuda Trazable FEN**, pensado para que lo use **cualquier persona sin conocimientos técnicos**.
 
-## Características
+## Cómo está organizado
 
-- **Minimalista**: una sola página, tema claro, tipografía de sistema, sin animaciones ni ruido visual.
-- **Accesible**:
-  - HTML semántico (`header`, `nav`, `main`, `section`, `form`, `label`).
-  - Pestañas con patrón WAI-ARIA (navegación por flechas, `aria-selected`, `aria-controls`).
-  - Enlace "saltar al contenido", foco visible, contraste AA, `prefers-reduced-motion`.
-  - Mensajes de estado con `aria-live` y `role="status"`.
-  - Barras de progreso con `role="progressbar"`.
-- **Sin dependencias**: no requiere `npm`, se abre directamente en el navegador.
+En lugar de menús técnicos, la pantalla de inicio muestra **3 acciones grandes y claras**:
+
+| Botón | Qué hace | Endpoint |
+|---|---|---|
+| 🎁 **Quiero donar** | Registra una donación y te da un código para seguirla | `POST /donaciones` |
+| 🔍 **Seguir mi donación** | Escribe tu código y mira dónde está tu ayuda | `GET /trazabilidad/{id}` |
+| 🆘 **Necesito ayuda** | Pide lo que tu comunidad necesita, con tus propias palabras | `POST /necesidades` |
+
+También hay un enlace secundario **"Ver qué se necesita ahora"** para transparencia (lista los pedidos y las donaciones).
+
+## Características de accesibilidad
+
+- **Lenguaje llano**: "Quiero donar", "¿Qué necesitás?", sin tecnicismos ni códigos internos.
+- **HTML semántico** (`header`, `main`, `section`, `form`, `label`).
+- **Foco visible**, enlace "saltar al contenido", **contraste AA**, `prefers-reduced-motion`.
+- **Mensajes de estado** con `aria-live` y `role="status"` (el usuario siempre sabe qué pasó).
+- **Navegación simple**: 3 botones grandes + botón "← Volver", sin menús complejos.
+- **Textos grandes** (17px) y botones amplios, fáciles de tocar.
 
 ## Cómo usarlo
 
@@ -23,20 +33,8 @@ Frontend alternativo **autocontenido** (HTML + CSS + JavaScript vanilla, sin bui
    python -m http.server 8080
    ```
 
-2. La URL de la API (Lambda) se puede cambiar en el campo del pie de página
-   (se guarda en `localStorage`). Por defecto usa la Lambda de producción.
+2. La URL de la API está al inicio del `<script>` en la constante `API_BASE`
+   (por defecto apunta a la Lambda de producción).
 
-## Funcionalidades
-
-| Pestaña | Endpoint |
-|---|---|
-| Inicio | `GET /health` + `GET /dashboard` |
-| Necesidades | `GET /necesidades` |
-| Donaciones | `GET /donaciones` |
-| Seguimiento | `GET /trazabilidad/{tracking_id}` |
-| Donar | `POST /donaciones` |
-| Reportar | `POST /necesidades` |
-
-> El backend ya responde CORS completo (`Access-Control-Allow-Origin: *` y
-> preflight con métodos/headers), por lo que todo funciona desde el navegador
-> sin necesidad de proxy.
+> El backend ya responde CORS completo, por lo que todo funciona desde el
+> navegador sin necesidad de proxy.
