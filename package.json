@@ -1,0 +1,26 @@
+{
+  "name": "fen-ayuda-trazable-kiro",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "FEN — Ayuda Trazable | Plataforma Serverless y GenAI (AWS Lambda + Amazon Bedrock + Kiro) para gestión humanitaria en Piura y Catacaos",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.9",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tailwindcss": "^4.0.9",
+    "typescript": "~5.6.2",
+    "vite": "^6.0.5"
+  }
+}

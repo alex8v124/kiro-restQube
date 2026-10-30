@@ -1,0 +1,232 @@
+import React, { useState } from 'react';
+import { AsignacionItem, EstadoTrazabilidad } from '../../types/fen';
+import { apiActualizarEntrega } from '../../services/api';
+import {
+  CategoriaBadge,
+  EstadoTrazabilidadBadge,
+  PrioridadBadge,
+  UrgenciaBadge,
+} from '../ui/Badges';
+import {
+  CheckCircle2,
+  Compass,
+  Loader2,
+  MapPin,
+  Navigation,
+  PackageCheck,
+  ShieldCheck,
+  Truck,
+} from 'lucide-react';
+
+interface LogisticoViewProps {
+  asignaciones: AsignacionItem[];
+  onRefresh: () => void;
+  onInspectTracking: (trackingId: string) => void;
+}
+
+const PUNTOS_CONTROL_PIURA_CATACAOS = [
+  'Salida Almacén Adelantado COER Piura (Zona Industrial)',
+  'Cruzando Puente Independencia — Vía Piura-Catacaos Km 8',
+  'Punto de Control Policial Monte Sullón — Catacaos',
+  'Desvío Bajo Piura — Sector Pedregal / Cura Mori',
+  'Arribo verificado en Albergue Destino — Acta firmada',
+];
+
+export const LogisticoView: React.FC<LogisticoViewProps> = ({
+  asignaciones,
+  onRefresh,
+  onInspectTracking,
+}) => {
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [customCheckpoint, setCustomCheckpoint] = useState<Record<string, string>>({});
+  const [banner, setBanner] = useState<string | null>(null);
+
+  const handleUpdateRoute = async (
+    asg: AsignacionItem,
+    nuevoEstado: EstadoTrazabilidad
+  ) => {
+    setLoadingId(`${asg.id}-${nuevoEstado}`);
+    setBanner(null);
+    const defaultPoint =
+      nuevoEstado === 'EN_RUTA'
+        ? 'Cruzando Puente Independencia — Corredor Humanitario Piura-Catacaos'
+        : nuevoEstado === 'ENTREGADO'
+          ? `Entregado con acta de conformidad en ${asg.albergueNombre}`
+          : 'Orden de carga validada en almacén COER Piura';
+
+    const checkpoint = customCheckpoint[asg.id]?.trim() || defaultPoint;
+
+    try {
+      await apiActualizarEntrega({
+        asignacionId: asg.id,
+        nuevoEstado,
+        puntoControlActual: checkpoint,
+      });
+      setBanner(
+        `Despacho ${asg.tracking_id} actualizado a estado ${nuevoEstado} (${checkpoint}).`
+      );
+      onRefresh();
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="kiro-card rounded-2xl p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/10">
+          <div>
+            <span className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#80f4ff]">
+              <Truck className="w-3.5 h-3.5" />
+              Rol 04 • Operador Logístico y Brigadas de Ruta (INDECI / COER)
+            </span>
+            <h2 className="text-xl font-bold text-white mt-0.5">
+              Control de Convoyes, Estados de Ruta y Confirmación de Entregas
+            </h2>
+          </div>
+          <span className="px-2.5 py-1 rounded-lg bg-[#80f4ff]/15 border border-[#80f4ff]/30 text-xs font-mono text-[#80f4ff]">
+            POST /entregas
+          </span>
+        </div>
+
+        {banner && (
+          <div className="mt-4 p-3.5 rounded-xl bg-[#80ffb5]/12 border border-[#80ffb5]/35 text-xs text-[#80ffb5] flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span>{banner}</span>
+          </div>
+        )}
+
+        <div className="mt-5 space-y-4">
+          {asignaciones.map((asg) => {
+            const isDelivered = asg.estadoRuta === 'ENTREGADO';
+            return (
+              <div
+                key={asg.id}
+                className="p-5 rounded-2xl bg-[#14111d] border border-white/10 hover:border-[#b080ff]/35 transition space-y-4"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono text-xs px-2.5 py-1 rounded bg-[#b080ff]/20 text-[#e2d3fe] border border-[#b080ff]/35 font-bold">
+                      {asg.id}
+                    </span>
+                    <button
+                      onClick={() => onInspectTracking(asg.tracking_id)}
+                      className="font-mono text-xs font-bold text-[#80ffb5] hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Compass className="w-3.5 h-3.5" />
+                      {asg.tracking_id}
+                    </button>
+                    <PrioridadBadge prioridad={asg.prioridad_despacho} />
+                    <UrgenciaBadge urgencia={asg.urgencia} />
+                    <CategoriaBadge categoria={asg.categoria} />
+                  </div>
+
+                  <EstadoTrazabilidadBadge estado={asg.estadoRuta} />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-white/10">
+                  <div>
+                    <div className="text-[11px] font-mono uppercase text-[#9589ab]">
+                      Albergue Destino
+                    </div>
+                    <div className="text-sm font-bold text-white mt-0.5">
+                      {asg.albergueNombre}
+                    </div>
+                    <div className="text-xs text-[#b080ff] flex items-center gap-1 mt-0.5">
+                      <MapPin className="w-3.5 h-3.5" />
+                      {asg.zona}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-[11px] font-mono uppercase text-[#9589ab]">
+                      Carga Humanitaria Auditada
+                    </div>
+                    <div className="text-sm font-medium text-white mt-0.5">{asg.recurso}</div>
+                    <div className="text-xs font-mono text-[#80ffb5] mt-0.5">
+                      Cantidad: {asg.cantidad}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-[11px] font-mono uppercase text-[#9589ab]">
+                      Unidad &amp; Último Punto de Control
+                    </div>
+                    <div className="text-xs font-mono text-[#80f4ff] mt-0.5">
+                      {asg.vehiculoPlaca} • {asg.operadorLogistico}
+                    </div>
+                    <div className="text-xs text-[#e2d3fe] mt-1 bg-[#1e182b] px-2.5 py-1.5 rounded-lg border border-white/10">
+                      📍 {asg.puntoControlActual}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Controles para avanzar estado de ruta */}
+                <div className="pt-3 border-t border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                  <div className="flex-1 flex items-center gap-2">
+                    <Navigation className="w-4 h-4 text-[#b080ff] shrink-0" />
+                    <select
+                      value={customCheckpoint[asg.id] || ''}
+                      onChange={(e) =>
+                        setCustomCheckpoint((prev) => ({
+                          ...prev,
+                          [asg.id]: e.target.value,
+                        }))
+                      }
+                      className="w-full px-3 py-2 rounded-xl bg-[#0e0c14] border border-white/15 text-xs text-white focus:outline-none focus:border-[#b080ff]"
+                    >
+                      <option value="">
+                        Seleccionar punto de control en corredor Piura / Catacaos...
+                      </option>
+                      {PUNTOS_CONTROL_PIURA_CATACAOS.map((pt) => (
+                        <option key={pt} value={pt}>
+                          {pt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={loadingId !== null}
+                      onClick={() => handleUpdateRoute(asg, 'EN_RUTA')}
+                      className="px-3.5 py-2 rounded-xl text-xs font-mono font-semibold bg-[#80f4ff]/15 hover:bg-[#80f4ff]/25 text-[#80f4ff] border border-[#80f4ff]/35 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      {loadingId === `${asg.id}-EN_RUTA` ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Truck className="w-3.5 h-3.5" />
+                      )}
+                      Marcar EN RUTA
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={loadingId !== null || isDelivered}
+                      onClick={() => handleUpdateRoute(asg, 'ENTREGADO')}
+                      className={`px-4 py-2 rounded-xl text-xs font-mono font-semibold flex items-center gap-1.5 cursor-pointer ${
+                        isDelivered
+                          ? 'bg-[#80ffb5]/10 text-[#80ffb5]/60 border border-[#80ffb5]/20 cursor-not-allowed'
+                          : 'kiro-glow-btn text-white'
+                      }`}
+                    >
+                      {loadingId === `${asg.id}-ENTREGADO` ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : isDelivered ? (
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                      ) : (
+                        <PackageCheck className="w-3.5 h-3.5" />
+                      )}
+                      {isDelivered ? 'Entrega Completada' : 'Confirmar ENTREGA en Albergue'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
