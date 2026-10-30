@@ -17,7 +17,7 @@ except ImportError:
 # Compatible con monkeypatch de TABLE en tests/test_app.py y con AWS SAM
 # ============================================================================
 
-TEAM_ID: str = os.environ.get("TEAM_ID", "NexusLabs")
+TEAM_ID: str = os.environ.get("TEAM_ID", "T068")
 TABLE_NAME: Optional[str] = os.environ.get("TABLE_NAME")
 AWS_REGION: str = os.environ.get("AWS_REGION", "us-east-1")
 
@@ -157,15 +157,45 @@ def _table_get(item_id: str) -> Optional[Dict[str, Any]]:
     return _MEM_BACKUP.get_item(Key={"id": item_id}).get("Item")
 
 
-def _table_scan() -> List[Dict[str, Any]]:
+def _table_scan_items(max_items: int = 100) -> List[Dict[str, Any]]:
+    """
+    Escanea la tabla paginando con ExclusiveStartKey / LastEvaluatedKey
+    (nunca solo la primera página) y devuelve hasta `max_items` ítems (100),
+    asegurando que los ítems recién creados estén incluidos.
+    """
+    raw_records: List[Dict[str, Any]] = []
+    seen_ids = set()
+
     if TABLE is not None:
         try:
-            resp = TABLE.scan()
-            if resp and "Items" in resp:
-                return resp["Items"]
+            scan_kwargs: Dict[str, Any] = {}
+            while True:
+                resp = TABLE.scan(**scan_kwargs)
+                page_items = (resp or {}).get("Items", [])
+                for r in page_items:
+                    if isinstance(r, dict) and "value" in r and r.get("recordType") != "job":
+                        item_id = str(r.get("id", ""))
+                        if item_id and item_id not in seen_ids:
+                            seen_ids.add(item_id)
+                            raw_records.append(r)
+                last_key = (resp or {}).get("LastEvaluatedKey")
+                if not last_key:
+                    break
+                scan_kwargs["ExclusiveStartKey"] = last_key
         except Exception:
             pass
-    return _MEM_BACKUP.scan().get("Items", [])
+
+    if not raw_records:
+        for r in _MEM_BACKUP.scan().get("Items", []):
+            if isinstance(r, dict) and "value" in r and r.get("recordType") != "job":
+                item_id = str(r.get("id", ""))
+                if item_id and item_id not in seen_ids:
+                    seen_ids.add(item_id)
+                    raw_records.append(r)
+
+    # Ordenar por fecha de creación descendente (los recién creados primero) si tienen createdAt
+    raw_records.sort(key=lambda x: float(x.get("createdAt", 0)), reverse=True)
+    return [{"id": str(r["id"]), "value": str(r["value"])} for r in raw_records[:max_items]]
 
 
 # ============================================================================
@@ -265,6 +295,8 @@ def _extract_path(event: Dict[str, Any]) -> str:
         raw = raw[len(stage) + 1 :]
     elif raw.startswith("/Prod/"):
         raw = raw[len("/Prod") :]
+    elif raw.startswith("/prod/"):
+        raw = raw[len("/prod") :]
     cleaned = raw.rstrip("/")
     return cleaned if cleaned else "/"
 
@@ -337,34 +369,34 @@ def lambda_handler(event: Dict[str, Any], context: Any = None) -> Dict[str, Any]
 
     # ------------------------------------------------------------------------
     # 2. INSIGNIA PERSISTENCIA (+25 PTS): POST /items, GET /items/{id}, GET /items
+    # Guarda en ItemsTable (TABLE), lee por id (404 si no existe) y en GET /items
+    # pagina el scan completo devolviendo hasta 100 ítems incluyendo el nuevo.
     # ------------------------------------------------------------------------
     if path == "/items" and method == "POST":
-        item_id = str(body.get("id") or uuid.uuid4().hex[:8])
+        item_id = str(body.get("id") or uuid.uuid4().hex[:12])
         val = str(body.get("value", ""))
-        record = {"id": item_id, "value": val, "recordType": "item"}
+        record = {
+            "id": item_id,
+            "value": val,
+            "recordType": "item",
+            "createdAt": time.time(),
+        }
         _table_put(record)
         return _response(201, {"id": item_id, "value": val}, headers)
 
     if path.startswith("/items/") and method == "GET":
         item_id = path_params.get("id") or path.split("/")[-1]
         found = _table_get(item_id)
-        if found and "value" in found:
-            return _response(200, {"id": item_id, "value": found["value"]}, headers)
+        if found and "value" in found and found.get("recordType") != "job":
+            return _response(200, {"id": str(found.get("id", item_id)), "value": str(found["value"])}, headers)
         return _response(404, {"error": "Item not found"}, headers)
 
     if path == "/items" and method == "GET":
-        all_rows = _table_scan()
-        items_list = [
-            {"id": r["id"], "value": r["value"]}
-            for r in all_rows
-            if "value" in r and r.get("recordType") != "job"
-        ]
+        items_list = _table_scan_items(max_items=100)
         return _response(200, items_list, headers)
 
     # ------------------------------------------------------------------------
     # 3. INSIGNIA ASÍNCRONO O AGENTE (+35 PTS): POST /jobs y GET /jobs/{jobId}
-    # Guarda en la tabla DynamoDB ItemsTable (variable TABLE) y resuelve el
-    # trabajo con status="done" y output=input[::-1] antes de los 12s.
     # ------------------------------------------------------------------------
     if path == "/jobs" and method == "POST":
         raw_input = str(body.get("input", ""))

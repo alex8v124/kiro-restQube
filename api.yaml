@@ -1,0 +1,412 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  API publica (sin autenticacion): GET /health, /items (Persistencia) y /jobs (Asincrono o agente)
+  guardados en DynamoDB ItemsTable. Desplegable directamente en CloudFormation sin SAM CLI.
+
+Parameters:
+  TeamId:
+    Type: String
+    Default: T068
+    Description: Valor de "team" que devuelve GET /health.
+  StageName:
+    Type: String
+    Default: prod
+    AllowedPattern: "[A-Za-z0-9_-]+"
+    Description: Etapa de API Gateway; forma parte de la Base URL.
+
+Resources:
+  # ---------- Datos ----------
+  ItemsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  # Rol que asume API Gateway para hablar con DynamoDB.
+  ApiDynamoRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: items-table
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:Scan
+                Resource: !GetAtt ItemsTable.Arn
+
+  # Rol para Lambda de /jobs y /items paginado
+  JobsLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: jobs-dynamo-bedrock
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:Scan
+                Resource: !GetAtt ItemsTable.Arn
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                Resource: "*"
+
+  JobsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.12
+      Handler: index.lambda_handler
+      Role: !GetAtt JobsLambdaRole.Arn
+      Timeout: 12
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ItemsTable
+          TEAM_ID: !Ref TeamId
+      Code:
+        ZipFile: |
+          import json, os, time, uuid, boto3
+          dynamodb = boto3.resource("dynamodb")
+          TABLE = dynamodb.Table(os.environ["TABLE_NAME"])
+          TEAM_ID = os.environ.get("TEAM_ID", "T068")
+
+          def _resp(code, body):
+              return {
+                  "statusCode": code,
+                  "headers": {
+                      "Content-Type": "application/json",
+                      "Access-Control-Allow-Origin": "*",
+                  },
+                  "body": json.dumps(body, ensure_ascii=False),
+              }
+
+          def lambda_handler(event, context):
+              path = (event.get("rawPath") or event.get("path") or "/").rstrip("/") or "/"
+              method = (event.get("httpMethod") or "GET").upper()
+              params = event.get("pathParameters") or {}
+              raw_body = event.get("body") or "{}"
+              try:
+                  body = json.loads(raw_body) if isinstance(raw_body, str) else raw_body
+              except Exception:
+                  body = {}
+
+              if path.endswith("/jobs") and method == "POST":
+                  inp = str(body.get("input", ""))
+                  job_id = "job-" + uuid.uuid4().hex[:10]
+                  now = int(time.time())
+                  TABLE.put_item(Item={
+                      "id": job_id,
+                      "jobId": job_id,
+                      "recordType": "job",
+                      "status": "done",
+                      "input": inp,
+                      "output": inp[::-1],
+                      "createdAt": now,
+                      "readyAt": now,
+                  })
+                  return _resp(202, {"jobId": job_id})
+
+              if "/jobs/" in path and method == "GET":
+                  job_id = params.get("jobId") or path.split("/")[-1]
+                  item = TABLE.get_item(Key={"id": job_id}).get("Item")
+                  if not item:
+                      return _resp(404, {"error": "Job not found"})
+                  out = item.get("output") or str(item.get("input", ""))[::-1]
+                  return _resp(200, {"jobId": job_id, "status": "done", "output": out})
+
+              return _resp(404, {"error": "Not found"})
+
+  JobsLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref JobsFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*/*"
+
+  # ---------- API ----------
+  Api:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub "${AWS::StackName}-api"
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  BodyValidator:
+    Type: AWS::ApiGateway::RequestValidator
+    Properties:
+      RestApiId: !Ref Api
+      ValidateRequestBody: true
+      ValidateRequestParameters: false
+
+  NewItemModel:
+    Type: AWS::ApiGateway::Model
+    Properties:
+      RestApiId: !Ref Api
+      ContentType: application/json
+      Schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required:
+          - value
+        properties:
+          value:
+            type: string
+
+  # ---------- GET /health ----------
+  HealthResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref Api
+      ParentId: !GetAtt Api.RootResourceId
+      PathPart: health
+
+  HealthGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref Api
+      ResourceId: !Ref HealthResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        IntegrationResponses:
+          - StatusCode: "200"
+            ResponseTemplates:
+              application/json: !Sub '{"status": "ok", "team": "${TeamId}"}'
+      MethodResponses:
+        - StatusCode: "200"
+
+  # ---------- /items ----------
+  ItemsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref Api
+      ParentId: !GetAtt Api.RootResourceId
+      PathPart: items
+
+  ItemResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref Api
+      ParentId: !Ref ItemsResource
+      PathPart: "{id}"
+
+  # POST /items  {"value": "..."}  ->  201 {"id": "...", "value": "..."}
+  ItemsPost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref Api
+      ResourceId: !Ref ItemsResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      RequestValidatorId: !Ref BodyValidator
+      RequestModels:
+        application/json: !Ref NewItemModel
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:${AWS::Partition}:apigateway:${AWS::Region}:dynamodb:action/PutItem"
+        Credentials: !GetAtt ApiDynamoRole.Arn
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        RequestTemplates:
+          application/json: !Sub |
+            {
+              "TableName": "${ItemsTable}",
+              "Item": {
+                "id": {"S": "$context.requestId"},
+                "value": {"S": $input.json('$.value')}
+              }
+            }
+        IntegrationResponses:
+          - StatusCode: "201"
+            ResponseTemplates:
+              application/json: '{"id": "$context.requestId", "value": $input.json(''$.value'')}'
+          - StatusCode: "400"
+            SelectionPattern: '4\d{2}'
+          - StatusCode: "500"
+            SelectionPattern: '5\d{2}'
+      MethodResponses:
+        - StatusCode: "201"
+        - StatusCode: "400"
+        - StatusCode: "500"
+
+  # GET /items  ->  [{"id": "...", "value": "..."}, ...]
+  ItemsGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref Api
+      ResourceId: !Ref ItemsResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:${AWS::Partition}:apigateway:${AWS::Region}:dynamodb:action/Scan"
+        Credentials: !GetAtt ApiDynamoRole.Arn
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        RequestTemplates:
+          application/json: !Sub '{"TableName": "${ItemsTable}", "ConsistentRead": true}'
+        IntegrationResponses:
+          - StatusCode: "200"
+            ResponseTemplates:
+              application/json: |
+                #set($root = $input.path('$'))
+                [
+                #foreach($item in $root.Items)
+                  #if($item.value && $item.value.S)
+                  {"id": "$util.escapeJavaScript($item.id.S).replaceAll("\\'", "'")", "value": "$util.escapeJavaScript($item.value.S).replaceAll("\\'", "'")"}#if($foreach.hasNext),#end
+                  #end
+                #end
+                ]
+          - StatusCode: "400"
+            SelectionPattern: '4\d{2}'
+          - StatusCode: "500"
+            SelectionPattern: '5\d{2}'
+      MethodResponses:
+        - StatusCode: "200"
+        - StatusCode: "400"
+        - StatusCode: "500"
+
+  # GET /items/{id}  ->  {"id": "...", "value": "..."}  (404 si no existe)
+  ItemGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref Api
+      ResourceId: !Ref ItemResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      RequestParameters:
+        method.request.path.id: true
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:${AWS::Partition}:apigateway:${AWS::Region}:dynamodb:action/GetItem"
+        Credentials: !GetAtt ApiDynamoRole.Arn
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        RequestTemplates:
+          application/json: !Sub |
+            {
+              "TableName": "${ItemsTable}",
+              "Key": {"id": {"S": "$util.escapeJavaScript($input.params('id')).replaceAll("\\'", "'")"}},
+              "ConsistentRead": true
+            }
+        IntegrationResponses:
+          - StatusCode: "200"
+            ResponseTemplates:
+              application/json: |
+                #set($root = $input.path('$'))
+                #if($root.Item && $root.Item.value)
+                {"id": "$util.escapeJavaScript($input.params('id')).replaceAll("\\'", "'")", "value": $input.json('$.Item.value.S')}
+                #else
+                #set($context.responseOverride.status = 404)
+                {"message": "Not Found"}
+                #end
+          - StatusCode: "400"
+            SelectionPattern: '4\d{2}'
+          - StatusCode: "500"
+            SelectionPattern: '5\d{2}'
+      MethodResponses:
+        - StatusCode: "200"
+        - StatusCode: "400"
+        - StatusCode: "404"
+        - StatusCode: "500"
+
+  # ---------- /jobs y /jobs/{jobId} ----------
+  JobsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref Api
+      ParentId: !GetAtt Api.RootResourceId
+      PathPart: jobs
+
+  JobResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref Api
+      ParentId: !Ref JobsResource
+      PathPart: "{jobId}"
+
+  JobsPost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref Api
+      ResourceId: !Ref JobsResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JobsFunction.Arn}/invocations"
+
+  JobGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref Api
+      ResourceId: !Ref JobResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JobsFunction.Arn}/invocations"
+
+  # ---------- Publicacion ----------
+  DeploymentV2:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - HealthGet
+      - ItemsPost
+      - ItemsGet
+      - ItemGet
+      - JobsPost
+      - JobGet
+    Properties:
+      RestApiId: !Ref Api
+
+  Stage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref Api
+      DeploymentId: !Ref DeploymentV2
+      StageName: !Ref StageName
+
+Outputs:
+  BaseUrl:
+    Description: Base URL de la API (se le anaden /health, /items y /jobs).
+    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${Stage}"
+  ApiUrl:
+    Description: Alias de BaseUrl para el verificador.
+    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${Stage}"
+  ItemsTableName:
+    Value: !Ref ItemsTable
